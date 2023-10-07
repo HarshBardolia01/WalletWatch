@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { connectDB } from "./DB/Database.js";
+import userRouter from "./router/user-router.js";
 
 dotenv.config({path: "./config/config.env"});
 const app = express();
@@ -28,9 +29,11 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get("/cat", (request, response) => {
+app.get("/", (request, response) => {
     response.send("Hello World!");
 })
+
+app.use("/api/user", userRouter);
 
 app.listen(port, () => {
     console.log(`Server is listening on http://localhost:${port}`);
