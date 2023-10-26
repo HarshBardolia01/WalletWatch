@@ -7,14 +7,13 @@ import morgan from "morgan";
 import path from "path";
 import { connectDB } from "./DB/Database.js";
 import userRouter from "./router/user-router.js";
+import otpRouter from "./router/otp-router.js";
 
 dotenv.config({path: "./config/config.env"});
 const app = express();
 const port = process.env.PORT;
 
-// added comment
-
-connectDB();
+// connectDB();
 
 // Middleware
 app.use(express.json());
@@ -36,6 +35,7 @@ app.get("/", (request, response) => {
 })
 
 app.use("/api/user", userRouter);
+app.use("/api/otp", otpRouter);
 
 app.listen(port, () => {
     console.log(`Server is listening on http://localhost:${port}`);

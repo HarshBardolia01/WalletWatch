@@ -12,8 +12,6 @@ export const register = async (request, response) => {
             })
         }
 
-        // console.log(passwor)
-
         let passwordStr = password.toString();
         let mobileNumberStr = mobileNumber.toString();
         let validNumber = true;

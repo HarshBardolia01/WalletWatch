@@ -17,3 +17,15 @@ export const getUserByEmail = async(email) => {
     if (!user) return null;
     return user;
 }
+
+export const getUserByMobileNo = async(mobileNo) => {
+    const user  = await User.findOne({mobileNo});
+    if (!user) return null;
+    return user;
+}
+
+export const getUserByEmailAndMobileNo = async(email, mobileNo) => {
+    const user = await User.findAll({email, mobileNo});
+    if (!user || user.length === 0) return null;
+    return user;
+}
