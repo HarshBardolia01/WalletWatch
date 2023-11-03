@@ -10,14 +10,14 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, "Email is required"],
-        unique : true,
+        // unique : true,
         validate : validator.isEmail,
     },
 
     mobileNumber: {
         type: String,
         required: [true, "Mobile number required"],
-        unique: true,
+        // unique: true,
         length: [10, "Mobile number must be of 10 digits"],
     },
 
