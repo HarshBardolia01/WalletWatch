@@ -9,7 +9,7 @@ import { connectDB } from "./DB/Database.js";
 import userRouter from "./router/user-router.js";
 import otpRouter from "./router/otp-router.js";
 
-dotenv.config({path: "./config/config.env"});
+dotenv.config({ path: "./config/config.env" });
 const app = express();
 const port = process.env.PORT;
 
@@ -19,11 +19,11 @@ const port = process.env.PORT;
 app.use(express.json());
 app.use(
     cors({
-      origin: "http://localhost:3000",
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE"],
+        origin: "http://localhost:3000",
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE"],
     })
-  );
+);
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("dev"));
@@ -38,5 +38,5 @@ app.use("/api/user", userRouter);
 app.use("/api/otp", otpRouter);
 
 app.listen(port, () => {
-    console.log(`Server is listening on http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 })
