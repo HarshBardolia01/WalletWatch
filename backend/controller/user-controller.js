@@ -9,7 +9,7 @@ export const register = async (request, response) => {
             return response.status(400).json({
                 success: false,
                 message: "Please enter All fields",
-            })
+            });
         }
 
         let passwordStr = password.toString();
@@ -30,14 +30,14 @@ export const register = async (request, response) => {
             });
         }
 
-        if (passwordStr.length() < 6) {
+        if (passwordStr.length < 6) {
             return response.status(400).json({
                 success: false,
                 message: "Paasword must be greater than 6 characters",
             });
         }
 
-        const user = await service.getUserByEmail(email);
+        const user = await service.getOneByEmail(email);
 
         if (user) {
             return response.status(409).json({
@@ -51,24 +51,81 @@ export const register = async (request, response) => {
 
         console.log({name, email, mobileNumber, password, hashedPassword});
 
-        const newUser = await service.create({
+        const newUser = await service.createUser({
             name,
             email,
             mobileNumber,
             password: hashedPassword,
         });
 
+        const userInfo = {
+            name: newUser.name,
+            email: newUser.email,
+            mobileNumber: newUser.mobileNumber,
+            __id: newUser.__id
+        };
+
         return response.status(200).json({
             success: true,
             message: "User created successfully",
-            user: newUser
+            user: userInfo
         });
 
     } catch (err) {
         return response.status(500).json({
             success: false,
             message: err.message,
-        })
+        });
     }
 }
 
+export const login = async (request, response) => {
+    try {
+        const { email, mobileNumber, password } = request.body;
+
+        if (!email || !mobileNumber || !password) {
+            return response.status(400).json({
+                success: false,
+                message: "Please enter All fields",
+            });
+        }
+
+        const user = await service.getOneByEmail(email);
+
+        if (!user) {
+            console.log(user);
+            return response.status(401).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordCorrect) {
+            return response.status(401).json({
+                success: false,
+                message: "Incorrect Credentials",
+            });
+        }
+
+        const userInfo = {
+            name: user.name,
+            email: user.email,
+            mobileNumber: user.mobileNumber,
+            __id: user.__id
+        };
+
+        return response.status(200).json({
+            success: true,
+            message: `Welcome back ${user.name}`,
+            user: userInfo
+        });
+
+    } catch (err) {
+        return response.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}

@@ -8,6 +8,9 @@ router.post(
     controller.register
 );
 
-
+router.post(
+    "/login",
+    controller.login
+);
 
 export default router;

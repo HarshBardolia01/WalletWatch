@@ -25,7 +25,12 @@ export const getOneByMobileNo = async(mobileNo) => {
 }
 
 export const getUserByEmailAndMobileNo = async(email, mobileNo) => {
-    const user = await User.findAll({email, mobileNo});
+    const user = await User.findOne({email, mobileNo});
+    console.log(user);
+
+    const users = await User.find();
+    console.log(users);
+
     if (!user || user.length === 0) return null;
     return user;
 }
@@ -43,7 +48,7 @@ export const getOnyByMobileNoAndId = async(mobileNo, id) => {
 }
 
 export const getAllUser = async() => {
-    const users = await User.findAll();
+    const users = await User.find();
     if (!users || users.length === 0) return null;
     return users;
 }
