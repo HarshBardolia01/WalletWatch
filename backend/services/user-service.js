@@ -53,6 +53,12 @@ export const getAllUser = async() => {
     return users;
 }
 
+export const getUserById = async(id) => {
+    const user = await User.findById(id);
+    if (!user) return null;
+    return user;
+}
+
 export const updateUserById = async(id, request) => {
     const user = await User.findById(id);
     user = request;

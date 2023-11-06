@@ -8,6 +8,7 @@ import path from "path";
 import { connectDB } from "./DB/Database.js";
 import userRouter from "./router/user-router.js";
 import otpRouter from "./router/otp-router.js";
+import tranactionRouter from "./router/transaction-router.js";
 
 dotenv.config({ path: "./config/config.env" });
 const app = express();
@@ -36,6 +37,7 @@ app.get("/", (request, response) => {
 
 app.use("/api/user", userRouter);
 app.use("/api/otp", otpRouter);
+app.use("/api/transaction", tranactionRouter);
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
