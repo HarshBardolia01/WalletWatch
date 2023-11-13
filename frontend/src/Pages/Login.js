@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Header from "../Components/Header";
 import { Box, Button, Grid } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import validator from "validator";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [userInfo, updateUserInfo] = useState({
@@ -13,14 +11,14 @@ const Login = () => {
         password: "",
         otp: "",
     });
+
     const [validEmail, updateValidEmail] = useState(true);
     const [credentialsValidated, updateCredentialsValidate] = useState(false);
-    const [showIncorrectCredentialsError, updateShowIncorrectCredentialsError] =
-        useState(false);
+    const [showIncorrectCredentialsError, updateShowIncorrectCredentialsError] = useState(false);
     const [showIncorrectOtp, UpdateShowIncorrectOtp] = useState(false); //to do: if this becomes false -> block the account & send email to the email
     const [userVerified, updateUserVerified] = useState(false); //to redirect to home page and fetch transactions
     const [otpSent, updateOtpSent] = useState(false); //if otp send -> show textinput field
-    const [InvalidEmailError, UpdateInvalidEmailError] = useState("");
+    // const [InvalidEmailError, UpdateInvalidEmailError] = useState("");
     const EMAIL = "qwer@gmail.com";
     const PASSWORD = "qwer";
     const OTP = "678";
@@ -41,14 +39,6 @@ const Login = () => {
 
     const handleUserInfoChange = (e) => {
         updateUserInfo({ ...userInfo, [e.target.name]: e.target.value });
-    };
-
-    const validateEmail = () => {
-        if (userInfo.email.length == 0 || validator.isEmail(userInfo.email)) {
-            updateValidEmail(true);
-        } else {
-            updateValidEmail(false);
-        }
     };
 
     const handleLoginButton = () => {
@@ -81,8 +71,13 @@ const Login = () => {
     // }
 
     // shuffle(otps);
+
     useEffect(() => {
-        validateEmail();
+        if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
+            updateValidEmail(true);
+        } else {
+            updateValidEmail(false);
+        }
     }, [userInfo.email]);
 
     useEffect(() => {
@@ -162,8 +157,8 @@ const Login = () => {
                                 display={"flex"}
                                 justifyContent={"space-around"}
                             >
-                                <a href="">Forgot Password?</a>
-                                <a href="register">Create Account</a>
+                                <Link to="/">Forgot Password?</Link>
+                                <Link to="/register">Create Account</Link>
                             </Box>
                         </Grid>
                     </Grid>

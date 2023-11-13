@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Box, Button, Grid, TextField } from "@mui/material";
 import validator from "validator";
-import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [userInfo, updateUserInfo] = useState({
@@ -25,16 +25,6 @@ const Register = () => {
 
     const OTP = "123";
 
-    const navigate = useNavigate();
-
-    // const navigateToLogin = () => {
-    //   navigate("/login");
-    // };
-
-    const navigateToHome = () => {
-        navigate("/");
-    };
-
     const handleChange = (e) => {
         updateUserInfo({ ...userInfo, [e.target.name]: e.target.value });
     };
@@ -47,30 +37,22 @@ const Register = () => {
         updateShowRePassword(!showRePassword);
     };
 
-    const validateEmail = () => {
-        if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
-            updateValidEmail(true);
-        } else {
-            updateValidEmail(false);
-        }
-    };
-
     const handleSendOTP = () => {
         updateDisplayIncorrectOTP(false);
         updateUserInfo({ ...userInfo, otp: "" });
         /*
-    call otp service
-    as recieved response success -> setOTPSent true
-    set OTP = response
-    */
+            call otp service
+            as recieved response success -> setOTPSent true
+            set OTP = response
+        */
         updateOtpSent(true); //fix this
     };
 
     const handleVerifyEmailButton = () => {
         /*
-        todo:
-        //get value of otp in backend in OTP
-    */
+            todo:
+            //get value of otp in backend in OTP
+        */
         if (userInfo.otp === OTP) {
             updateDisplayIncorrectOTP(false);
             updateIsEmailVerified(true);
@@ -82,11 +64,14 @@ const Register = () => {
 
     const handleRegisterButton = () => {
         //todo: redirect to login / home page
-        navigateToHome();
     };
 
     useEffect(() => {
-        validateEmail();
+        if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
+            updateValidEmail(true);
+        } else {
+            updateValidEmail(false);
+        }
     }, [userInfo.email]);
 
     useEffect(() => {
@@ -311,7 +296,7 @@ const Register = () => {
                         </Button>
                     </Grid>
                     <Grid item xs={12} textAlign={"center"}>
-                        <a href="login">Already have an account?</a>{" "}
+                        <Link to="/login">Already have an account?</Link>{" "}
                         {/*todo: Redirect to login*/}
                     </Grid>
                 </Grid>

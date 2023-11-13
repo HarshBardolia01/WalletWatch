@@ -1,30 +1,32 @@
 import "./App.css";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
+import Layout from "./Layout";
 import Transactions from "./Pages/Transactions";
 
 function App() {
-    const navigate = useNavigate();
-
-    const navigateToRegister = () => {
-        navigate("/register");
-    };
-
-    const navigateToLogin = () => {
-        navigate("/login");
-    };
-
-    const navigateToHome = () => {
-        navigate("/");
-    };
     return (
         <div className="App">
-            <Routes>
-                <Route path="/" element={<Transactions />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login />} />
-            </Routes>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        
+                        <Route index element={
+                            <Transactions />
+                        } />
+
+                        <Route path="/register" element={
+                            <Register />
+                        } />
+
+                        <Route path="/login" element={
+                            <Login />
+                        } />
+                        
+                    </Route>
+                </Routes>
+            </BrowserRouter>
         </div>
     );
 }
