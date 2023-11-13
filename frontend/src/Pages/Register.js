@@ -13,9 +13,6 @@ const Register = () => {
   });
 
   const [validEmail, updateValidEmail] = useState(false);
-  const [emailHelperMessage, updateEmailHelperMessage] = useState(
-    "Enter a valid email!"
-  );
   const [otpSent, updateOtpSent] = useState(false); //todo: required??
   const [isEmailVerified, updateIsEmailVerified] = useState(false);
   const [displayIncorrectOTP, updateDisplayIncorrectOTP] = useState(false);
@@ -29,17 +26,16 @@ const Register = () => {
   };
 
   const validateEmail = () => {
-    if (validator.isEmail(userInfo.email)) {
+    if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
       updateValidEmail(true);
-      updateEmailHelperMessage("Email Validated ✅");
     } else {
       updateValidEmail(false);
-      updateEmailHelperMessage("Please enter a valid email❗");
     }
   };
 
   const handleSendOTP = () => {
     updateDisplayIncorrectOTP(false);
+    updateUserInfo({ ...userInfo, otp: "" });
     /*
     call otp service
     as recieved response success -> setOTPSent true
@@ -56,7 +52,6 @@ const Register = () => {
     if (userInfo.otp === OTP) {
       updateDisplayIncorrectOTP(false);
       updateIsEmailVerified(true);
-      updateEmailHelperMessage("Email Verified ✅");
     } else {
       updateDisplayIncorrectOTP(true);
       updateUserInfo({ ...userInfo, [userInfo.otp]: "" });
@@ -70,10 +65,6 @@ const Register = () => {
   useEffect(() => {
     validateEmail();
   }, [userInfo.email]);
-
-  useEffect(() => {
-    console.log(!isEmailVerified || !passwordsMatch);
-  }, [isEmailVerified, passwordsMatch]);
 
   useEffect(() => {
     if (isEmailVerified && userInfo.password && userInfo.rePassword) {
@@ -100,20 +91,19 @@ const Register = () => {
 
   return (
     <Box>
-      <Header />
       <Box
         border={"3px solid grey"}
         borderRadius={"15px"}
         width={"40%"}
         margin={"5% auto"}
-        p={"35px 10px"}
+        p={"35px 40px"}
       >
         <Grid container spacing={4}>
           <Grid item xs={12} textAlign={"center"}>
             <h1>Register</h1>
           </Grid>
 
-          <Grid item xs={6} textAlign={"center"}>
+          <Grid item xs={12}>
             <TextField
               required
               name="name"
@@ -122,64 +112,76 @@ const Register = () => {
               onChange={handleChange}
             />
           </Grid>
-          <Grid item xs={6}></Grid>
-          <Grid item xs={6} textAlign={"center"}>
+          <Grid item xs={6}>
             <TextField
               required
               name="email"
+              error={!validEmail}
+              helperText={!validEmail ? "Please Enter a valid Email" : ""}
               label="Email"
               value={userInfo.email}
               onChange={handleChange}
               disabled={otpSent || isEmailVerified}
             />
           </Grid>
-          <Grid item xs={6} textAlign={"center"}>
-            <h4>{emailHelperMessage}</h4>
-          </Grid>
 
-          {isEmailVerified ? (
-            <></>
-          ) : otpSent ? (
+          {!isEmailVerified ? (
+            <Grid item xs={6} textAlign={"center"}>
+              <Button
+                onClick={handleSendOTP}
+                disabled={
+                  !validEmail ||
+                  userInfo.email.length === 0 ||
+                  otpSent ||
+                  isEmailVerified
+                }
+                variant="outlined"
+              >
+                Send OTP
+              </Button>
+            </Grid>
+          ) : (
+            <Grid item xs={6} textAlign={"center"}>
+              <h4 style={{ color: "green" }}>Email Verified</h4>
+            </Grid>
+          )}
+
+          {otpSent && !isEmailVerified && (
             <>
-              <Grid item xs={6} textAlign={"center"}>
+              <Grid item xs={6} textAlign={"left"}>
                 <TextField
                   required
                   name="otp"
                   label="Enter OTP"
                   value={userInfo.otp}
-                  disabled={!otpSent || displayIncorrectOTP}
+                  disabled={!otpSent || displayIncorrectOTP || isEmailVerified}
                   onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={6} textAlign={"center"}>
                 <Button
                   onClick={handleVerifyEmailButton}
-                  disabled={displayIncorrectOTP}
+                  disabled={
+                    displayIncorrectOTP ||
+                    userInfo.otp.length === 0 ||
+                    isEmailVerified
+                  }
                 >
                   Verify Email
                 </Button>
               </Grid>
             </>
-          ) : (
-            <Grid item xs={12} textAlign={"center"}>
-              <Button
-                onClick={handleSendOTP}
-                disabled={!validEmail}
-                variant="outlined"
-              >
-                Send OTP
-              </Button>
-            </Grid>
           )}
+
           {displayIncorrectOTP && (
             <>
               <Grid item xs={6} textAlign={"center"}>
-                <h4 color="red">Incorrect OTP</h4>
+                <h4 style={{ color: "red" }}>Incorrect OTP</h4>
               </Grid>
               <Grid item xs={6} textAlign={"center"}>
                 <Button
                   onClick={handleSendOTP}
-                  disabled={!validEmail}
+                  disabled={!validEmail || userInfo.length === 0}
                   variant="outlined"
                 >
                   ReSend OTP
@@ -187,32 +189,35 @@ const Register = () => {
               </Grid>
             </>
           )}
-          <Grid item xs={6} textAlign={"center"}>
-            <TextField
-              required
-              name="password"
-              error={!validPassword}
-              label="Enter Password"
-              value={userInfo.password}
-              onChange={handleChange}
-              helperText={
-                !validPassword ? "Password must be atleast 6 character" : ""
-              }
-            />
-          </Grid>
 
-          <Grid item xs={6} textAlign={"center"}>
-            <TextField
-              required
-              name="rePassword"
-              label="Re-enter Password"
-              error={!passwordsMatch}
-              // color={passwordsMatch ? "success" : "error"}
-              value={userInfo.rePassword}
-              onChange={handleChange}
-              helperText={!passwordsMatch ? "Passwords don't match" : ""}
-            />
-          </Grid>
+          {isEmailVerified && (
+            <>
+              <Grid item xs={6} textAlign={"left"}>
+                <TextField
+                  required
+                  name="password"
+                  error={!validPassword}
+                  label="Enter Password"
+                  value={userInfo.password}
+                  onChange={handleChange}
+                  helperText={
+                    !validPassword ? "Password must be atleast 6 character" : ""
+                  }
+                />
+              </Grid>
+              <Grid item xs={6} textAlign={"center"}>
+                <TextField
+                  required
+                  name="rePassword"
+                  label="Re-enter Password"
+                  error={!passwordsMatch}
+                  value={userInfo.rePassword}
+                  onChange={handleChange}
+                  helperText={!passwordsMatch ? "Passwords don't match" : ""}
+                />
+              </Grid>
+            </>
+          )}
 
           <Grid item xs={12} textAlign={"center"}>
             <Button
@@ -239,3 +244,27 @@ const Register = () => {
 };
 
 export default Register;
+
+//for password field!
+{
+  /* <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
+          <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+          <OutlinedInput
+            id="outlined-adornment-password"
+            type={showPassword ? 'text' : 'password'}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+            label="Password"
+          />
+        </FormControl> */
+}
