@@ -3,6 +3,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Box, Button, Grid, TextField } from "@mui/material";
 import validator from "validator";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [userInfo, updateUserInfo] = useState({
@@ -13,46 +14,63 @@ const Register = () => {
         otp: "",
     });
 
-    const [showPassword, updateShowPassword] = useState(false);
-    const [showRePassword, updateShowRePassword] = useState(false);
-
     const [validEmail, updateValidEmail] = useState(false);
     const [otpSent, updateOtpSent] = useState(false); //todo: required??
     const [isEmailVerified, updateIsEmailVerified] = useState(false);
     const [displayIncorrectOTP, updateDisplayIncorrectOTP] = useState(false);
     const [passwordsMatch, updatePasswordsMatch] = useState(true);
     const [validPassword, updateValidPassword] = useState(true);
+    const [showPassword, updateShowPassword] = useState(false);
+    const [showRePassword, updateShowRePassword] = useState(false);
 
     const OTP = "123";
 
-    const handleClickShowPassword = () => {
-        updateShowPassword(!showPassword);
-    }
+    const navigate = useNavigate();
 
-    const handleClickShowRePassword = () => {
-        updateShowRePassword(!showRePassword);
-    }
+    // const navigateToLogin = () => {
+    //   navigate("/login");
+    // };
+
+    const navigateToHome = () => {
+        navigate("/");
+    };
 
     const handleChange = (e) => {
         updateUserInfo({ ...userInfo, [e.target.name]: e.target.value });
+    };
+
+    const handleClickShowPassword = () => {
+        updateShowPassword(!showPassword);
+    };
+
+    const handleClickShowRePassword = () => {
+        updateShowRePassword(!showRePassword);
+    };
+
+    const validateEmail = () => {
+        if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
+            updateValidEmail(true);
+        } else {
+            updateValidEmail(false);
+        }
     };
 
     const handleSendOTP = () => {
         updateDisplayIncorrectOTP(false);
         updateUserInfo({ ...userInfo, otp: "" });
         /*
-        call otp service
-        as recieved response success -> setOTPSent true
-        set OTP = response
-        */
+    call otp service
+    as recieved response success -> setOTPSent true
+    set OTP = response
+    */
         updateOtpSent(true); //fix this
     };
 
     const handleVerifyEmailButton = () => {
         /*
-            todo:
-            //get value of otp in backend in OTP
-        */
+        todo:
+        //get value of otp in backend in OTP
+    */
         if (userInfo.otp === OTP) {
             updateDisplayIncorrectOTP(false);
             updateIsEmailVerified(true);
@@ -64,14 +82,11 @@ const Register = () => {
 
     const handleRegisterButton = () => {
         //todo: redirect to login / home page
+        navigateToHome();
     };
 
     useEffect(() => {
-        if (userInfo.email.length === 0 || validator.isEmail(userInfo.email)) {
-            updateValidEmail(true);
-        } else {
-            updateValidEmail(false);
-        }
+        validateEmail();
     }, [userInfo.email]);
 
     useEffect(() => {
@@ -125,7 +140,9 @@ const Register = () => {
                             required
                             name="email"
                             error={!validEmail}
-                            helperText={!validEmail ? "Please Enter a valid Email" : ""}
+                            helperText={
+                                !validEmail ? "Please Enter a valid Email" : ""
+                            }
                             label="Email"
                             value={userInfo.email}
                             onChange={handleChange}
@@ -162,7 +179,11 @@ const Register = () => {
                                     name="otp"
                                     label="Enter OTP"
                                     value={userInfo.otp}
-                                    disabled={!otpSent || displayIncorrectOTP || isEmailVerified}
+                                    disabled={
+                                        !otpSent ||
+                                        displayIncorrectOTP ||
+                                        isEmailVerified
+                                    }
                                     onChange={handleChange}
                                 />
                             </Grid>
@@ -189,7 +210,9 @@ const Register = () => {
                             <Grid item xs={6} textAlign={"center"}>
                                 <Button
                                     onClick={handleSendOTP}
-                                    disabled={!validEmail || userInfo.length === 0}
+                                    disabled={
+                                        !validEmail || userInfo.length === 0
+                                    }
                                     variant="outlined"
                                 >
                                     ReSend OTP
@@ -210,17 +233,25 @@ const Register = () => {
                                     value={userInfo.password}
                                     onChange={handleChange}
                                     helperText={
-                                        !validPassword ? "Password must be atleast 6 character" : ""
+                                        !validPassword
+                                            ? "Password must be atleast 6 character"
+                                            : ""
                                     }
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
                                                 <IconButton
                                                     aria-label="toggle password visibility"
-                                                    onClick={handleClickShowPassword}
+                                                    onClick={
+                                                        handleClickShowPassword
+                                                    }
                                                     edge="end"
                                                 >
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                    {showPassword ? (
+                                                        <VisibilityOff />
+                                                    ) : (
+                                                        <Visibility />
+                                                    )}
                                                 </IconButton>
                                             </InputAdornment>
                                         ),
@@ -236,16 +267,26 @@ const Register = () => {
                                     error={!passwordsMatch}
                                     value={userInfo.rePassword}
                                     onChange={handleChange}
-                                    helperText={!passwordsMatch ? "Passwords don't match" : ""}
+                                    helperText={
+                                        !passwordsMatch
+                                            ? "Passwords don't match"
+                                            : ""
+                                    }
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
                                                 <IconButton
                                                     aria-label="toggle password visibility"
-                                                    onClick={handleClickShowRePassword}
+                                                    onClick={
+                                                        handleClickShowRePassword
+                                                    }
                                                     edge="end"
                                                 >
-                                                    {showRePassword ? <VisibilityOff /> : <Visibility />}
+                                                    {showRePassword ? (
+                                                        <VisibilityOff />
+                                                    ) : (
+                                                        <Visibility />
+                                                    )}
                                                 </IconButton>
                                             </InputAdornment>
                                         ),
@@ -270,7 +311,7 @@ const Register = () => {
                         </Button>
                     </Grid>
                     <Grid item xs={12} textAlign={"center"}>
-                        <a href="/">Already have an account?</a>{" "}
+                        <a href="login">Already have an account?</a>{" "}
                         {/*todo: Redirect to login*/}
                     </Grid>
                 </Grid>
