@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Box, Button, Grid, TextField } from "@mui/material";
+import Alert from "@mui/material/Alert";
 import validator from "validator";
 
 const Register = () => {
@@ -98,209 +99,214 @@ const Register = () => {
     }, [isEmailVerified, userInfo.password]);
 
     return (
-        <Box>
-            <Box
-                border={"3px solid grey"}
-                borderRadius={"15px"}
-                width={"40%"}
-                margin={"5% auto"}
-                p={"35px 40px"}
-            >
-                <Grid container spacing={4}>
-                    <Grid item xs={12} textAlign={"center"}>
-                        <h1>Register</h1>
-                    </Grid>
+        <Box
+            border={"3px solid grey"}
+            borderRadius={"15px"}
+            width={"40%"}
+            margin={"5% auto"}
+            p={"35px 40px"}
+        >
+            <Grid container spacing={4}>
 
-                    <Grid item xs={12}>
-                        <TextField
-                            required
-                            name="name"
-                            label="Name"
-                            value={userInfo.name}
-                            onChange={handleChange}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            required
-                            name="email"
-                            error={!validEmail}
-                            helperText={
-                                !validEmail ? "Please Enter a valid Email" : ""
+                <Grid item xs={12} textAlign={"center"}>
+                    <h1>Register</h1>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <TextField
+                        required
+                        fullWidth
+                        type="text"
+                        name="name"
+                        label="Name"
+                        value={userInfo.name}
+                        onChange={handleChange}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField
+                        required
+                        type="email"
+                        name="email"
+                        error={!validEmail}
+                        helperText={
+                            !validEmail ? "Please Enter a valid Email" : ""
+                        }
+                        label="Email"
+                        value={userInfo.email}
+                        onChange={handleChange}
+                        disabled={otpSent || isEmailVerified}
+                    />
+                </Grid>
+
+                {!isEmailVerified ? (
+                    <Grid item xs={6} textAlign={"center"}>
+                        <Button
+                            onClick={handleSendOTP}
+                            disabled={
+                                !validEmail ||
+                                userInfo.email.length === 0 ||
+                                otpSent ||
+                                isEmailVerified
                             }
-                            label="Email"
-                            value={userInfo.email}
-                            onChange={handleChange}
-                            disabled={otpSent || isEmailVerified}
-                        />
+                            variant="outlined"
+                        >
+                            Send OTP
+                        </Button>
                     </Grid>
+                ) : (
+                    <Grid item xs={6} textAlign={"center"}>
+                        <h4 style={{ color: "green" }}>Email Verified</h4>
+                    </Grid>
+                )}
 
-                    {!isEmailVerified ? (
+                {otpSent && !isEmailVerified && (
+                    <>
+                        <Grid item xs={6} textAlign={"left"}>
+                            <TextField
+                                required
+                                name="otp"
+                                label="Enter OTP"
+                                value={userInfo.otp}
+                                disabled={
+                                    !otpSent ||
+                                    displayIncorrectOTP ||
+                                    isEmailVerified
+                                }
+                                onChange={handleChange}
+                            />
+                        </Grid>
                         <Grid item xs={6} textAlign={"center"}>
                             <Button
-                                onClick={handleSendOTP}
+                                onClick={handleVerifyEmailButton}
                                 disabled={
-                                    !validEmail ||
-                                    userInfo.email.length === 0 ||
-                                    otpSent ||
+                                    displayIncorrectOTP ||
+                                    userInfo.otp.length === 0 ||
                                     isEmailVerified
                                 }
                                 variant="outlined"
                             >
-                                Send OTP
+                                Verify Email
                             </Button>
                         </Grid>
-                    ) : (
+                    </>
+                )}
+
+                {displayIncorrectOTP && (
+                    <>
                         <Grid item xs={6} textAlign={"center"}>
-                            <h4 style={{ color: "green" }}>Email Verified</h4>
+                            <Alert severity="error">
+                                Incorrect OTP
+                            </Alert>
                         </Grid>
-                    )}
+                        <Grid item xs={6} textAlign={"center"}>
+                            <Button
+                                onClick={handleSendOTP}
+                                disabled={
+                                    !validEmail || userInfo.length === 0
+                                }
+                                variant="outlined"
+                            >
+                                ReSend OTP
+                            </Button>
+                        </Grid>
+                    </>
+                )}
 
-                    {otpSent && !isEmailVerified && (
-                        <>
-                            <Grid item xs={6} textAlign={"left"}>
-                                <TextField
-                                    required
-                                    name="otp"
-                                    label="Enter OTP"
-                                    value={userInfo.otp}
-                                    disabled={
-                                        !otpSent ||
-                                        displayIncorrectOTP ||
-                                        isEmailVerified
-                                    }
-                                    onChange={handleChange}
-                                />
-                            </Grid>
-                            <Grid item xs={6} textAlign={"center"}>
-                                <Button
-                                    onClick={handleVerifyEmailButton}
-                                    disabled={
-                                        displayIncorrectOTP ||
-                                        userInfo.otp.length === 0 ||
-                                        isEmailVerified
-                                    }
-                                >
-                                    Verify Email
-                                </Button>
-                            </Grid>
-                        </>
-                    )}
+                {isEmailVerified && (
+                    <>
+                        <Grid item xs={6} textAlign={"left"}>
+                            <TextField
+                                required
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                error={!validPassword}
+                                label="Enter Password"
+                                value={userInfo.password}
+                                onChange={handleChange}
+                                helperText={
+                                    !validPassword
+                                        ? "Password must be atleast 6 character"
+                                        : ""
+                                }
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={
+                                                    handleClickShowPassword
+                                                }
+                                                edge="end"
+                                            >
+                                                {showPassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={6} textAlign={"center"}>
+                            <TextField
+                                required
+                                name="rePassword"
+                                type={showRePassword ? "text" : "password"}
+                                label="Re-enter Password"
+                                error={!passwordsMatch}
+                                value={userInfo.rePassword}
+                                onChange={handleChange}
+                                helperText={
+                                    !passwordsMatch
+                                        ? "Passwords don't match"
+                                        : ""
+                                }
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={
+                                                    handleClickShowRePassword
+                                                }
+                                                edge="end"
+                                            >
+                                                {showRePassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Grid>
+                    </>
+                )}
 
-                    {displayIncorrectOTP && (
-                        <>
-                            <Grid item xs={6} textAlign={"center"}>
-                                <h4 style={{ color: "red" }}>Incorrect OTP</h4>
-                            </Grid>
-                            <Grid item xs={6} textAlign={"center"}>
-                                <Button
-                                    onClick={handleSendOTP}
-                                    disabled={
-                                        !validEmail || userInfo.length === 0
-                                    }
-                                    variant="outlined"
-                                >
-                                    ReSend OTP
-                                </Button>
-                            </Grid>
-                        </>
-                    )}
-
-                    {isEmailVerified && (
-                        <>
-                            <Grid item xs={6} textAlign={"left"}>
-                                <TextField
-                                    required
-                                    name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    error={!validPassword}
-                                    label="Enter Password"
-                                    value={userInfo.password}
-                                    onChange={handleChange}
-                                    helperText={
-                                        !validPassword
-                                            ? "Password must be atleast 6 character"
-                                            : ""
-                                    }
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={
-                                                        handleClickShowPassword
-                                                    }
-                                                    edge="end"
-                                                >
-                                                    {showPassword ? (
-                                                        <VisibilityOff />
-                                                    ) : (
-                                                        <Visibility />
-                                                    )}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={6} textAlign={"center"}>
-                                <TextField
-                                    required
-                                    name="rePassword"
-                                    type={showRePassword ? "text" : "password"}
-                                    label="Re-enter Password"
-                                    error={!passwordsMatch}
-                                    value={userInfo.rePassword}
-                                    onChange={handleChange}
-                                    helperText={
-                                        !passwordsMatch
-                                            ? "Passwords don't match"
-                                            : ""
-                                    }
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    aria-label="toggle password visibility"
-                                                    onClick={
-                                                        handleClickShowRePassword
-                                                    }
-                                                    edge="end"
-                                                >
-                                                    {showRePassword ? (
-                                                        <VisibilityOff />
-                                                    ) : (
-                                                        <Visibility />
-                                                    )}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
-                            </Grid>
-                        </>
-                    )}
-
-                    <Grid item xs={12} textAlign={"center"}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleRegisterButton}
-                            disabled={
-                                !isEmailVerified ||
-                                !passwordsMatch ||
-                                userInfo.password.length < 6 ||
-                                userInfo.name.length === 0
-                            }
-                        >
-                            Register
-                        </Button>
-                    </Grid>
-                    <Grid item xs={12} textAlign={"center"}>
-                        <Link to="/login">Already have an account?</Link>{" "}
-                        {/*todo: Redirect to login*/}
-                    </Grid>
+                <Grid item xs={12} textAlign={"center"}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleRegisterButton}
+                        disabled={
+                            !isEmailVerified ||
+                            !passwordsMatch ||
+                            userInfo.password.length < 6 ||
+                            userInfo.name.length === 0
+                        }
+                    >
+                        Register
+                    </Button>
                 </Grid>
-            </Box>
+                <Grid item xs={12} textAlign={"center"}>
+                    <Link to="/login">Already have an account?</Link>{" "}
+                    {/*todo: Redirect to login*/}
+                </Grid>
+            </Grid>
         </Box>
     );
 };
