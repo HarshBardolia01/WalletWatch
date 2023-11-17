@@ -1,9 +1,18 @@
 import NodeCache from "node-cache"
 import nodemailer from "nodemailer"
+import moment from "moment";
 import fast2sms from "fast-two-sms"
 
 // cache to store the OTPs
 const otpCache = new NodeCache({ stdTTL: 300 });
+
+// this is like a map in cpp, [key, value] ==> [email, wrongEmailCnt]
+const wrongOtpCntEmails = new NodeCache({ stdTTL: 7200 });
+
+// this are the Emails banned as they entered
+// wrong OTP multiple times in span of 2 hours
+// [key, value] ==> [email, time at which it is banned]
+const bannedEmails = new NodeCache({ stdTTL: 18000 });
 
 // generates random 6 digit OTP, and stores it to the cache
 function generateOtp(key) {
@@ -24,6 +33,41 @@ function getOtp(key) {
 // removes the key, value pair of email and OTP from cache
 function clearOtp(key) {
     otpCache.del(key);
+}
+
+// checks is the email is already been banned or not
+function isEmailBanned(email) {
+    const exists = bannedEmails.has(email);
+    return exists;
+}
+
+function getWrongCount(email) {
+    const count = wrongOtpCntEmails.get(email);
+    if (!count) return 0;
+    return count;
+}
+
+function increaseWrongCount(email) {
+    const currentCount = getWrongCount(email);
+    const currentTime = moment();
+    
+    if (currentCount === 0) {
+        
+        const obj = {
+            "count": 1,
+            "time": currentTime,
+            "ttl": 7200
+        };
+
+        wrongOtpCntEmails.set(email, obj, 7200);
+
+    } else {
+        const curObj = wrongOtpCntEmails.get(email);
+        const previousTime = curObj.time;
+        const differenceInTime = currentTime.diff(previousTime, "seconds");
+
+
+    }
 }
 
 export const sendOTP = async (request, response) => {

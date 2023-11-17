@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
 import DataGrid, {
     Column,
     Editing,
@@ -11,10 +10,10 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import "devextreme-react/text-area";
 import { Item } from "devextreme-react/form";
-import transactionData from "../Transaction Data/transactionData";
+import transactionData from "../Transaction-Data/transactionData";
 import { Box } from "@mui/material";
-import category from "../Transaction Data/category";
-import transactionType from "../Transaction Data/transactionType";
+import category from "../Transaction-Data/category";
+import transactionType from "../Transaction-Data/transactionType";
 
 const notesEditorOptions = { height: 100 };
 const Transactions = () => {
