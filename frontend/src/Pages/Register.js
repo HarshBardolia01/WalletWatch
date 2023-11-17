@@ -50,7 +50,8 @@ const Register = () => {
 
         try {
             const response = await axios.post(sendOtpApi, {
-                "email": userInfo.email
+                "email": userInfo.email,
+                "isLogin": false
             });
 
             console.log(response.data, response.status);
@@ -210,7 +211,7 @@ const Register = () => {
                                 otpSent ||
                                 isEmailVerified
                             }
-                            variant="outlined"
+                            variant="contained"
                         >
                             SEND OTP
                         </Button>
@@ -250,7 +251,7 @@ const Register = () => {
                                     isEmailVerified
                                 }
                                 fullWidth
-                                variant="outlined"
+                                variant="contained"
                             >
                                 Verify Email
                             </Button>
@@ -272,7 +273,7 @@ const Register = () => {
                                 disabled={
                                     !validEmail || userInfo.length === 0
                                 }
-                                variant="outlined"
+                                variant="contained"
                                 style={{ textTransform: "none", padding: "14px 0px" }}
                             >
                                 ReSend OTP
@@ -360,7 +361,7 @@ const Register = () => {
 
                 <Grid item xs={12} textAlign={"center"}>
                     <Button
-                        variant="outlined"
+                        variant="contained"
                         onClick={handleRegisterButton}
                         disabled={
                             !isEmailVerified ||

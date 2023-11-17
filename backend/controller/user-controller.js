@@ -80,9 +80,9 @@ export const register = async (request, response) => {
 
 export const login = async (request, response) => {
     try {
-        const { email, mobileNumber, password } = request.body;
+        const { email, password } = request.body;
 
-        if (!email || !mobileNumber || !password) {
+        if (!email || !password) {
             return response.status(400).json({
                 success: false,
                 message: "Please enter All fields",
@@ -111,8 +111,7 @@ export const login = async (request, response) => {
         const userInfo = {
             name: user.name,
             email: user.email,
-            mobileNumber: user.mobileNumber,
-            __id: user.__id
+            _id: user._id
         };
 
         return response.status(200).json({

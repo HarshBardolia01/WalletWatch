@@ -73,6 +73,7 @@ function increaseWrongCount(email) {
 export const sendOTP = async (request, response) => {
     try {
         const { email } = request.body;
+        const isLogin = request.body.isLogin;
 
         // error handling
         if (!email) {
@@ -118,9 +119,33 @@ export const sendOTP = async (request, response) => {
             console.log('Message sent: %s', info.messageId);
             console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
+            const obj = {
+                "otp": otp,
+            }
+
+            if (isLogin) {
+                let options = [];
+                const min = 100000;
+                const max = 999999;
+
+                for (let i = 0; i < 3; i++) {
+                    const currentOtp = Math.floor(Math.random() * (max - min + 1)) + min;
+                    options.push(currentOtp.toString());
+                }
+
+                options.push(otp);
+
+                for (let i = options.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+
+                obj.options = options;
+            }
+
             return response.status(200).json({
                 success: true,
-                otp: otp, // ideally should not be sent, just for ease of testing
+                otpInfo: obj,
                 message: "OTP sent successfully",
             });
         });
