@@ -50,9 +50,9 @@ function getWrongCount(email) {
 function increaseWrongCount(email) {
     const currentCount = getWrongCount(email);
     const currentTime = moment();
-    
+
     if (currentCount === 0) {
-        
+
         const obj = {
             "count": 1,
             "time": currentTime,
@@ -175,7 +175,7 @@ export const verifyOTP = async (request, response) => {
         const message = (isValid ? "OTP verified successfully" : "Invalid OTP");
 
         return response.status(200).json({
-            success: true,
+            success: isValid,
             message: message
         });
 

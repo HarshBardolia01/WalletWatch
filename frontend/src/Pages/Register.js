@@ -5,6 +5,9 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { Box, Button, Grid, TextField } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import validator from "validator";
+import axios from "axios";
+import { sendOtpApi, verifyOtpApi, registerApi } from "../utils/ApiRequests.js";
+import { Navigate } from "react-router-dom";
 
 const Register = () => {
     const [userInfo, updateUserInfo] = useState({
@@ -15,6 +18,8 @@ const Register = () => {
         otp: "",
     });
 
+    const [error, updateError] = useState(false);
+    const [errorMessage, updateErrorMessage] = useState("");
     const [validEmail, updateValidEmail] = useState(false);
     const [otpSent, updateOtpSent] = useState(false); //todo: required??
     const [isEmailVerified, updateIsEmailVerified] = useState(false);
@@ -23,8 +28,7 @@ const Register = () => {
     const [validPassword, updateValidPassword] = useState(true);
     const [showPassword, updateShowPassword] = useState(false);
     const [showRePassword, updateShowRePassword] = useState(false);
-
-    const OTP = "123";
+    const [redirect, updateRedirect] = useState(false);
 
     const handleChange = (e) => {
         updateUserInfo({ ...userInfo, [e.target.name]: e.target.value });
@@ -38,33 +42,72 @@ const Register = () => {
         updateShowRePassword(!showRePassword);
     };
 
-    const handleSendOTP = () => {
+    const handleSendOTP = async (e) => {
+
+        e.preventDefault();
         updateDisplayIncorrectOTP(false);
         updateUserInfo({ ...userInfo, otp: "" });
-        /*
-            call otp service
-            as recieved response success -> setOTPSent true
-            set OTP = response
-        */
-        updateOtpSent(true); //fix this
-    };
 
-    const handleVerifyEmailButton = () => {
-        /*
-            todo:
-            //get value of otp in backend in OTP
-        */
-        if (userInfo.otp === OTP) {
-            updateDisplayIncorrectOTP(false);
-            updateIsEmailVerified(true);
-        } else {
-            updateDisplayIncorrectOTP(true);
-            updateUserInfo({ ...userInfo, [userInfo.otp]: "" });
+        try {
+            const response = await axios.post(sendOtpApi, {
+                "email": userInfo.email
+            });
+
+            console.log(response.data, response.status);
+
+            if (response.data.success) {
+                updateOtpSent(true);
+                updateError(false);
+                updateErrorMessage("");
+            }
+        } catch (error) {
+            updateError(true);
+            updateErrorMessage(error.response.data.message);
         }
     };
 
-    const handleRegisterButton = () => {
-        //todo: redirect to login / home page
+    const handleVerifyEmailButton = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await axios.post(verifyOtpApi, {
+                "email": userInfo.email,
+                "otp": userInfo.otp
+            });
+
+            console.log(response.data, response.status);
+
+            if (response.data.success) {
+                updateDisplayIncorrectOTP(false);
+                updateIsEmailVerified(true);
+            } else {
+                updateDisplayIncorrectOTP(true);
+                updateUserInfo({ ...userInfo, [userInfo.otp]: "" });
+            }
+
+            updateError(false);
+            updateErrorMessage("");
+
+        } catch (error) {
+            updateError(true);
+            updateErrorMessage(error.response.data.message);
+        }
+    };
+
+    const handleRegisterButton = async (e) => {
+        e.preventDefault();
+
+        const response = await axios.post(registerApi, {
+            "name": userInfo.name,
+            "email": userInfo.email,
+            "password": userInfo.password
+        });
+
+        console.log(response.data);
+
+        if (response.data.success) {
+            updateRedirect(true);
+        }
     };
 
     useEffect(() => {
@@ -98,6 +141,10 @@ const Register = () => {
         }
     }, [isEmailVerified, userInfo.password]);
 
+    if (redirect) {
+        return <Navigate to="/" />
+    }
+
     return (
         <Box
             border={"3px solid grey"}
@@ -111,6 +158,16 @@ const Register = () => {
                 <Grid item xs={12} textAlign={"center"}>
                     <h1>Register</h1>
                 </Grid>
+
+                {
+                    error &&
+
+                    <Grid item xs={12} textAlign={"center"}>
+                        <Alert severity="error" fullWidth>
+                            {errorMessage}
+                        </Alert>
+                    </Grid>
+                }
 
                 <Grid item xs={12} >
                     <TextField
@@ -229,6 +286,7 @@ const Register = () => {
                         <Grid item xs={6} textAlign={"left"}>
                             <TextField
                                 required
+                                fullWidth
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 error={!validPassword}
@@ -264,6 +322,7 @@ const Register = () => {
                         <Grid item xs={6} textAlign={"center"}>
                             <TextField
                                 required
+                                fullWidth
                                 name="rePassword"
                                 type={showRePassword ? "text" : "password"}
                                 label="Re-enter Password"
