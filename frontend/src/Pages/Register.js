@@ -112,7 +112,7 @@ const Register = () => {
                     <h1>Register</h1>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid item xs={12} >
                     <TextField
                         required
                         fullWidth
@@ -123,9 +123,11 @@ const Register = () => {
                         onChange={handleChange}
                     />
                 </Grid>
-                <Grid item xs={6}>
+
+                <Grid item xs={8}>
                     <TextField
                         required
+                        fullWidth
                         type="email"
                         name="email"
                         error={!validEmail}
@@ -140,8 +142,10 @@ const Register = () => {
                 </Grid>
 
                 {!isEmailVerified ? (
-                    <Grid item xs={6} textAlign={"center"}>
+                    <Grid item xs={4} textAlign={"center"} >
                         <Button
+                            fullWidth
+                            style={{ textTransform: "none", padding: "14px 0px" }}
                             onClick={handleSendOTP}
                             disabled={
                                 !validEmail ||
@@ -151,12 +155,14 @@ const Register = () => {
                             }
                             variant="outlined"
                         >
-                            Send OTP
+                            SEND OTP
                         </Button>
                     </Grid>
                 ) : (
-                    <Grid item xs={6} textAlign={"center"}>
-                        <h4 style={{ color: "green" }}>Email Verified</h4>
+                    <Grid item xs={4} textAlign={"center"}>
+                        <Alert severity="success">
+                            Email Verified
+                        </Alert>
                     </Grid>
                 )}
 
@@ -173,17 +179,20 @@ const Register = () => {
                                     displayIncorrectOTP ||
                                     isEmailVerified
                                 }
+                                fullWidth
                                 onChange={handleChange}
                             />
                         </Grid>
                         <Grid item xs={6} textAlign={"center"}>
                             <Button
+                                style={{ textTransform: "none", padding: "14px 0px" }}
                                 onClick={handleVerifyEmailButton}
                                 disabled={
                                     displayIncorrectOTP ||
                                     userInfo.otp.length === 0 ||
                                     isEmailVerified
                                 }
+                                fullWidth
                                 variant="outlined"
                             >
                                 Verify Email
@@ -201,11 +210,13 @@ const Register = () => {
                         </Grid>
                         <Grid item xs={6} textAlign={"center"}>
                             <Button
+                                fullWidth
                                 onClick={handleSendOTP}
                                 disabled={
                                     !validEmail || userInfo.length === 0
                                 }
                                 variant="outlined"
+                                style={{ textTransform: "none", padding: "14px 0px" }}
                             >
                                 ReSend OTP
                             </Button>
@@ -298,6 +309,8 @@ const Register = () => {
                             userInfo.password.length < 6 ||
                             userInfo.name.length === 0
                         }
+                        fullWidth
+                        style={{ textTransform: "none", padding: "14px 0px" }}
                     >
                         Register
                     </Button>
