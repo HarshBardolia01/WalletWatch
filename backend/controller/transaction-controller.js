@@ -56,6 +56,33 @@ export const create = async (request, response) => {
     }
 }
 
+export const getAllTransactionByUserId = async (request, response) => {
+    try {
+        const { userId } = request.body;
+        const user = await userService.getUserById(userId);
+
+        if (!user) {
+            return response.status(401).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const transactions = await transactionService.getAllTransactionByUserId(userId);
+
+        return response.status(200).json({
+            success: true,
+            transactions: transactions
+        });
+
+    } catch (error) {
+        response.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
 export const getAllTransactions = async (request, response) => {
     try {
         const {
@@ -94,7 +121,7 @@ export const getAllTransactions = async (request, response) => {
             };
         }
 
-        const transactions = transactionService.getAllTransaction(query);
+        const transactions = await transactionService.getAllTransaction(query);
 
         return response.status(200).json({
             success: true,
@@ -140,7 +167,18 @@ export const updateTransaction = async (request, response) => {
             date: date
         };
 
-        const transaction = await transactionService.updateTransactionById(transactionId, data);
+        console.log(data);
+
+        const updated = await transactionService.updateTransactionById(transactionId, data);
+
+        if (!updated) {
+            return response.status(400).json({
+                success: false,
+                message: "some error occured"
+            });
+        }
+
+        const transaction = await transactionService.getTransactionById(transactionId);
 
         return response.status(200).json({
             success: true,
@@ -158,8 +196,7 @@ export const updateTransaction = async (request, response) => {
 
 export const deleteTransaction = async (request, response) => {
     try {
-        const transactionId = request.params.id;
-        const { userId } = request.body;
+        const { transactionId, userId } = request.params;
 
         const user = await userService.getUserById(userId);
 

@@ -17,6 +17,7 @@ const Login = () => {
         otp: "",
     });
 
+    const [currentUser, updateCurrentUser] = useState();
     const [redirect, updateRedirect] = useState(false);
     const [error, updateError] = useState(false);
     const [errorMessage, updateErrorMessage] = useState("");
@@ -32,6 +33,7 @@ const Login = () => {
     useEffect(() => {
         const user = localStorage.getItem('user');
         console.log(user);
+
         if (user) {
             updateRedirect(true);
         }
@@ -82,9 +84,11 @@ const Login = () => {
             console.log(response);
 
             if (response.data.success) {
-                sendOtp();
                 updateCredentialsValidate(true);
                 updateShowIncorrectCredentialsError(false);
+                console.log(response.data);
+                updateCurrentUser(response.data.user);
+                sendOtp();
             } else {
                 updateShowIncorrectCredentialsError(true);
             }
@@ -106,7 +110,7 @@ const Login = () => {
             console.log(response.data, response.status);
 
             if (response.data.success) {
-                localStorage.setItem("user", JSON.stringify(userInfo.email));
+                localStorage.setItem("user", JSON.stringify(currentUser));
                 updateRedirect(true);
                 updateUserVerified(true);
             } else {

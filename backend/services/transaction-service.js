@@ -15,8 +15,17 @@ export const createTransaction = async (request) => {
     return transaction;
 }
 
+export const getAllTransactionByUserId = async (userId) => {
+    const transactions = await Transaction.find({ user: userId });
+    if (!transactions) return [];
+    return transactions;
+}
+
 export const getAllTransaction = async (query) => {
-    return await Transaction.find(query);
+    console.log(query);
+    const transactions = await Transaction.find(query);
+    if (!transactions) return [];
+    return transactions;
 }
 
 export const getTransactionById = async (id) => {
@@ -26,18 +35,11 @@ export const getTransactionById = async (id) => {
 }
 
 export const updateTransactionById = async (id, request) => {
-    const where = [];
-    where.push({id: id});
-
-    const transaction = await Transaction.findById(id);
-    transaction.updateOne(request);
-
-    return transaction;
+    const updated = await Transaction.updateOne({_id: id}, request);
+    return updated;
 }
 
 export const deleteTransactionById = async (id) => {
-    const transaction = await Transaction.findById(id);
-    if (!transaction) return false;
-    await transaction.deleteOne();
-    return true;
+    const result = await Transaction.deleteOne({_id : id});
+    return result;
 }

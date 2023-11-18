@@ -14,49 +14,145 @@ import transactionData from "../Transaction-Data/transactionData";
 import { Box } from "@mui/material";
 import category from "../Transaction-Data/category";
 import transactionType from "../Transaction-Data/transactionType";
+import { Navigate } from "react-router-dom";
+import axios from "axios";
+import { createTransactionApi, getTransactionsApi, updateTransactionApi, deteleTransactionApi } from "../utils/ApiRequests.js";
 
 const notesEditorOptions = { height: 100 };
 const Transactions = () => {
-    // const [redirect, updateRedirect] = useState(false);
+    const [redirect, updateRedirect] = useState(false);
+    const [transactions, updateTransactions] = useState([]);
+    const [frequency, updateFrequency] = useState("custom");
+    const [type, updateType] = useState("all");
+    const [startDate, updateStartDate] = useState(null);
+    const [endDate, updateEndDate] = useState(null);
+    const [currentUser, updateCurrentUser] = useState(null);
 
-    // useEffect(() => {
-    //     const user = localStorage.getItem('user');
-    //     console.log(user);
-    //     if (!user) {
-    //         updateRedirect(true);
-    //     }
-    // }, []);
+    useEffect(async () => {
+        const user = localStorage.getItem('user');
+        if (!user) {
+            updateRedirect(true);
+        } else {
+            const obj = JSON.parse(user);
+            updateCurrentUser(obj);
+            // try {
+            //     console.log(obj);
 
-    // if (redirect) {
-    //     return <Navigate to="/register" />
-    // }
+            //     const { data } = await axios.post(getAllTransactionByUserId, {
+            //         userId: obj.id,
+            //     });
 
-    const [transactionsData, updateTransactionsData] = useState([]);
+            //     console.log(data);
+            //     updateTransactions(data.transactions);
 
-    const [currKey, updateCurrKey] = useState();
+            // } catch (error) {
+            //     console.log(error.message);
+            // }
+        }
+    }, []);
 
-    const printNewRow = (e) => {
-        console.log(e + " new row");
-    };
+    const fetchTransaction = async () => {
 
-    const printUpdateedRow = (e) => {
-        console.log(e + " updated row");
-    };
-    const printDeleteRow = (e) => {
-        console.log(e + " delete row");
-    };
+        try {
 
-    const printt = () => {
-        console.log("changes");
-    };
+            const { data } = await axios.post(getTransactionsApi, {
+                userId: currentUser.id,
+                frequency: frequency,
+                startDate: startDate,
+                endDate: endDate,
+                transactionType: type,
+            });
+
+            updateTransactions(data.transactions);
+
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
 
     useEffect(() => {
-        updateTransactionsData(transactionData);
-    }, [transactionData]);
+        fetchTransaction();
+    }, [currentUser, frequency, endDate, type, startDate]);
 
-    useEffect(() => {
-        console.log(transactionsData);
-    }, [transactionsData]);
+    const addTransaction = async (event) => {
+        try {
+            const {
+                title,
+                amount,
+                category,
+                description,
+                transactionType,
+                date
+            } = event.data;
+
+            const response = await axios.post(createTransactionApi, {
+                title: title,
+                amount: amount,
+                category: category,
+                description: description,
+                transactionType: transactionType,
+                date: date,
+                userId: currentUser.id
+            });
+        } catch (error) {
+            // TODO: Error handling
+        }
+    }
+
+    const updateTransaction = async (event) => {
+        try {
+            const {
+                title,
+                amount,
+                category,
+                description,
+                transactionType,
+                date
+            } = event.data;
+
+            const id = event.data._id;
+            const apiUrl = `${updateTransactionApi}/${id}`;
+
+            console.log(apiUrl);
+
+            const response = await axios.put(apiUrl,
+                {
+                    title: title,
+                    amount: amount,
+                    category: category,
+                    description: description,
+                    transactionType: transactionType,
+                    date: date,
+                }
+            );
+
+            console.log(response);
+
+        } catch (error) {
+            // TODO: Error handling
+        }
+    }
+
+    const deleteTransaction = async (event) => {
+        try {
+            const id = event.data._id;
+            const userId = currentUser.id;
+            const params = {
+                id: id,
+                userId: userId
+            };
+
+            const apiUrl = `${deteleTransactionApi}/${id}/${userId}`;
+
+            const response = await axios.delete(apiUrl, { params });
+        } catch (error) {
+            // TODO: error handling
+        }
+    }
+
+    if (redirect) {
+        return <Navigate to="/register" />
+    }
 
     return (
         <Box
@@ -68,16 +164,16 @@ const Transactions = () => {
             }}
         >
             <DataGrid
-                dataSource={transactionsData}
-                keyExpr="ID"
+                dataSource={transactions}
+                keyExpr="_id"
                 showBorders={true}
                 allowColumnResizing
                 repaintChangesOnly={true}
                 // onEditingStart={updateCurrKey()}
-                onRowInserted={(e) => printNewRow(e)}
-                onRowUpdated={(e) => printUpdateedRow(e)}
-                onRowRemoved={(e) => printDeleteRow(e)}
-                onSaved={printt}
+                onRowInserted={(e) => addTransaction(e)}
+                onRowUpdated={(e) => updateTransaction(e)}
+                onRowRemoved={(e) => deleteTransaction(e)}
+                onSaved={fetchTransaction}
             >
                 <Paging enabled={true} pageSize={10} />
                 <Editing
@@ -106,6 +202,7 @@ const Transactions = () => {
                                 editorType="dxTextArea"
                                 colSpan={2}
                                 editorOptions={notesEditorOptions}
+                                isRequired
                             />
                         </Item>
                     </Form>

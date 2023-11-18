@@ -1,4 +1,4 @@
-import {Router} from "express";
+import { Router } from "express";
 import * as controller from "../controller/transaction-controller.js"
 
 const router = Router();
@@ -13,13 +13,18 @@ router.post(
     controller.getAllTransactions
 );
 
+router.post(
+    "/getAllTransactionByUserId",
+    controller.getAllTransactionByUserId
+);
+
 router.put(
     "/updateById/:id",
     controller.updateTransaction
 );
 
 router.delete(
-    "/deteleById/:id",
+    "/deteleById/:id/:userId",
     controller.deleteTransaction
 );
 
