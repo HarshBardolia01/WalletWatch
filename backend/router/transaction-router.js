@@ -1,30 +1,18 @@
 import { Router } from "express";
-import * as controller from "../controller/transaction-controller.js"
+import * as controller from "../controller/transaction-controller.js";
 
 const router = Router();
 
-router.post(
-    "/create",
-    controller.create
-);
+router.post("/create", controller.create);
 
-router.post(
-    "/getAllTransaction",
-    controller.getAllTransactions
-);
+router.post("/getAllTransaction", controller.getAllTransactions);
 
-router.post(
-    "/getAllTransactionByUserId",
-    controller.getAllTransactionByUserId
-);
+router.post("/getAllTransactionByUserId", controller.getAllTransactionByUserId);
 
-router.put(
-    "/updateById/:id",
-    controller.updateTransaction
-);
+router.put("/updateById/:id", controller.updateTransaction);
 
 router.delete(
-    "/deteleById/:id/:userId",
+    "/deleteById/:transactionId/:userId",
     controller.deleteTransaction
 );
 

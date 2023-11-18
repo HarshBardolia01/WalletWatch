@@ -16,7 +16,12 @@ import category from "../Transaction-Data/category";
 import transactionType from "../Transaction-Data/transactionType";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
-import { createTransactionApi, getTransactionsApi, updateTransactionApi, deteleTransactionApi } from "../utils/ApiRequests.js";
+import {
+    createTransactionApi,
+    getTransactionsApi,
+    updateTransactionApi,
+    deleteTransactionApi,
+} from "../utils/ApiRequests.js";
 
 const notesEditorOptions = { height: 100 };
 const Transactions = () => {
@@ -29,7 +34,7 @@ const Transactions = () => {
     const [currentUser, updateCurrentUser] = useState(null);
 
     useEffect(async () => {
-        const user = localStorage.getItem('user');
+        const user = localStorage.getItem("user");
         if (!user) {
             updateRedirect(true);
         } else {
@@ -52,9 +57,7 @@ const Transactions = () => {
     }, []);
 
     const fetchTransaction = async () => {
-
         try {
-
             const { data } = await axios.post(getTransactionsApi, {
                 userId: currentUser.id,
                 frequency: frequency,
@@ -64,11 +67,10 @@ const Transactions = () => {
             });
 
             updateTransactions(data.transactions);
-
         } catch (error) {
             console.log(error.message);
         }
-    }
+    };
 
     useEffect(() => {
         fetchTransaction();
@@ -82,7 +84,7 @@ const Transactions = () => {
                 category,
                 description,
                 transactionType,
-                date
+                date,
             } = event.data;
 
             const response = await axios.post(createTransactionApi, {
@@ -92,12 +94,12 @@ const Transactions = () => {
                 description: description,
                 transactionType: transactionType,
                 date: date,
-                userId: currentUser.id
+                userId: currentUser.id,
             });
         } catch (error) {
             // TODO: Error handling
         }
-    }
+    };
 
     const updateTransaction = async (event) => {
         try {
@@ -107,7 +109,7 @@ const Transactions = () => {
                 category,
                 description,
                 transactionType,
-                date
+                date,
             } = event.data;
 
             const id = event.data._id;
@@ -115,43 +117,41 @@ const Transactions = () => {
 
             console.log(apiUrl);
 
-            const response = await axios.put(apiUrl,
-                {
-                    title: title,
-                    amount: amount,
-                    category: category,
-                    description: description,
-                    transactionType: transactionType,
-                    date: date,
-                }
-            );
+            const response = await axios.put(apiUrl, {
+                title: title,
+                amount: amount,
+                category: category,
+                description: description,
+                transactionType: transactionType,
+                date: date,
+            });
 
             console.log(response);
-
         } catch (error) {
             // TODO: Error handling
         }
-    }
+    };
 
     const deleteTransaction = async (event) => {
         try {
-            const id = event.data._id;
+            const transactionId = event.data._id;
             const userId = currentUser.id;
             const params = {
-                id: id,
-                userId: userId
+                transactionId: transactionId,
+                userId: userId,
             };
 
-            const apiUrl = `${deteleTransactionApi}/${id}/${userId}`;
+            const apiUrl = `${deleteTransactionApi}/${transactionId}/${userId}`;
 
-            const response = await axios.delete(apiUrl, { params });
+            const response = await axios.delete(apiUrl);
+            console.log(response);
         } catch (error) {
             // TODO: error handling
         }
-    }
+    };
 
     if (redirect) {
-        return <Navigate to="/register" />
+        return <Navigate to="/register" />;
     }
 
     return (
