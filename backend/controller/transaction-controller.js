@@ -11,13 +11,20 @@ export const create = async (request, response) => {
             description,
             transactionType,
             date,
-            userId
+            userId,
         } = request.body;
 
-        if (!title || !amount || !category || !description || !transactionType || !date) {
+        if (
+            !title ||
+            !amount ||
+            !category ||
+            !description ||
+            !transactionType ||
+            !date
+        ) {
             return response.status(400).json({
                 success: false,
-                message: "Please fill all the fields!"
+                message: "Please fill all the fields!",
             });
         }
 
@@ -26,7 +33,7 @@ export const create = async (request, response) => {
         if (!user) {
             return response.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
             });
         }
 
@@ -37,7 +44,7 @@ export const create = async (request, response) => {
             description: description,
             transactionType: transactionType,
             date: date,
-            user: userId
+            user: userId,
         });
 
         user.transactions.push(newTransaction);
@@ -45,33 +52,55 @@ export const create = async (request, response) => {
 
         return response.status(200).json({
             success: true,
-            message: "Transaction added successfully!"
+            message: "Transaction added successfully!",
         });
-
     } catch (err) {
         return response.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
-}
+};
+
+export const getAllTransactionByUserId = async (request, response) => {
+    try {
+        const { userId } = request.body;
+        const user = await userService.getUserById(userId);
+
+        if (!user) {
+            return response.status(401).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const transactions = await transactionService.getAllTransactionByUserId(
+            userId
+        );
+
+        return response.status(200).json({
+            success: true,
+            transactions: transactions,
+        });
+    } catch (error) {
+        response.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+};
 
 export const getAllTransactions = async (request, response) => {
     try {
-        const {
-            userId,
-            transactionType,
-            frequency,
-            startDate,
-            endDate
-        } = request.body;
+        const { userId, transactionType, frequency, startDate, endDate } =
+            request.body;
 
         const user = await userService.getUserById(userId);
 
         if (!user) {
             return response.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
             });
         }
 
@@ -83,9 +112,9 @@ export const getAllTransactions = async (request, response) => {
             query.transactionType = transactionType;
         }
 
-        if (frequency !== 'custom') {
+        if (frequency !== "custom") {
             query.date = {
-                $gt: moment().subtract(Number(frequency), "days").toDate()
+                $gt: moment().subtract(Number(frequency), "days").toDate(),
             };
         } else if (startDate && endDate) {
             query.date = {
@@ -94,40 +123,35 @@ export const getAllTransactions = async (request, response) => {
             };
         }
 
-        const transactions = transactionService.getAllTransaction(query);
+        const transactions = await transactionService.getAllTransaction(query);
 
         return response.status(200).json({
             success: true,
-            transactions: transactions
+            transactions: transactions,
         });
-
     } catch (err) {
         response.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
-}
+};
 
 export const updateTransaction = async (request, response) => {
     try {
         const transactionId = request.params.id;
 
-        const {
-            title,
-            amount,
-            category,
-            description,
-            transactionType,
-            date,
-        } = request.body;
+        const { title, amount, category, description, transactionType, date } =
+            request.body;
 
-        const transactionElement = await transactionService.getTransactionById(transactionId);
+        const transactionElement = await transactionService.getTransactionById(
+            transactionId
+        );
 
         if (!transactionElement) {
             return response.status(400).json({
                 success: false,
-                message: "Transaction not found!"
+                message: "Transaction not found!",
             });
         }
 
@@ -137,64 +161,78 @@ export const updateTransaction = async (request, response) => {
             category: category,
             description: description,
             transactionType: transactionType,
-            date: date
+            date: date,
         };
 
-        const transaction = await transactionService.updateTransactionById(transactionId, data);
+        const updated = await transactionService.updateTransactionById(
+            transactionId,
+            data
+        );
+
+        if (!updated) {
+            return response.status(400).json({
+                success: false,
+                message: "some error occured",
+            });
+        }
+
+        const transaction = await transactionService.getTransactionById(
+            transactionId
+        );
 
         return response.status(200).json({
             success: true,
             message: "Transaction updated successfully",
-            transaction: transaction
+            transaction: transaction,
         });
-
     } catch (err) {
         return response.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
-}
+};
 
 export const deleteTransaction = async (request, response) => {
     try {
-        const transactionId = request.params.id;
-        const { userId } = request.body;
+        const { transactionId, userId } = request.params;
 
         const user = await userService.getUserById(userId);
 
         if (!user) {
             return response.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
             });
         }
 
-        const transactionDeleted = await transactionService.deleteTransactionById(transactionId);
+        const transactionDeleted =
+            await transactionService.deleteTransactionById(transactionId);
 
         if (!transactionDeleted) {
             return response.status(400).json({
                 success: false,
-                message: "Transaction not found"
+                message: "Transaction not found",
             });
         }
 
-        const transactionsAfterDeletion = user.transactions.filter((transaction) => {
-            return (transaction._id === transactionId);
-        });
+        const transactionsAfterDeletion = user.transactions.filter(
+            (transaction) => {
+                return transaction._id === transactionId;
+            }
+        );
 
         user.transactions = transactionsAfterDeletion;
         user.save();
 
         return response.status(200).json({
             success: true,
-            message: "Transaction deleted successfully!"
+            message: "Transaction deleted successfully!",
         });
-
     } catch (err) {
         return response.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
-}
+};

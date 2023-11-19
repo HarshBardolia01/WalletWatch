@@ -11,12 +11,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Email is required"],
         // unique : true,
-        validate : validator.isEmail,
+        validate: validator.isEmail,
     },
 
     mobileNumber: {
         type: String,
-        required: [true, "Mobile number required"],
+        // required: [true, "Mobile number required"],
         // unique: true,
         length: [10, "Mobile number must be of 10 digits"],
     },
@@ -24,15 +24,15 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Password is required"],
-        minlength : [6, "Password Must Be Atleast 6 characters"],
+        minlength: [6, "Password Must Be Atleast 6 characters"],
     },
-    
+
     transactions: {
         type: [],
     },
 
     createdAt: {
-        type:Date,
+        type: Date,
         default: Date.now,
     },
 });

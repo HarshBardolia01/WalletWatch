@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 
 export const register = async (request, response) => {
     try {
-        const {name, email, mobileNumber, password} = request.body;
+        const { name, email, mobileNumber, password } = request.body;
 
-        if (!name || !email || !mobileNumber || !password) {
+        if (!name || !email || !password) {
             return response.status(400).json({
                 success: false,
                 message: "Please enter All fields",
@@ -13,27 +13,28 @@ export const register = async (request, response) => {
         }
 
         let passwordStr = password.toString();
-        let mobileNumberStr = mobileNumber.toString();
-        let validNumber = true;
-        let moblieNumberLen = mobileNumberStr.length;
 
-        for (let i = 0; i < moblieNumberLen; i++) {
-            if (!(mobileNumberStr[i] >= '0' && mobileNumberStr[i] <= '9')) {
-                validNumber = false;
-            }
-        }
-        
-        if (!validNumber || moblieNumberLen !== 10) {
-            return response.status(400).json({
-                success: false,
-                message: "Invalid Mobile number",
-            });
-        }
+        // let mobileNumberStr = mobileNumber.toString();
+        // let validNumber = true;
+        // let moblieNumberLen = mobileNumberStr.length;
+
+        // for (let i = 0; i < moblieNumberLen; i++) {
+        //     if (!(mobileNumberStr[i] >= '0' && mobileNumberStr[i] <= '9')) {
+        //         validNumber = false;
+        //     }
+        // }
+
+        // if (!validNumber || moblieNumberLen !== 10) {
+        //     return response.status(400).json({
+        //         success: false,
+        //         message: "Invalid Mobile number",
+        //     });
+        // }
 
         if (passwordStr.length < 6) {
             return response.status(400).json({
                 success: false,
-                message: "Paasword must be greater than 6 characters",
+                message: "Password must be greater than 6 characters",
             });
         }
 
@@ -49,20 +50,18 @@ export const register = async (request, response) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        console.log({name, email, mobileNumber, password, hashedPassword});
+        console.log({ name, email, password, hashedPassword });
 
         const newUser = await service.createUser({
             name,
             email,
-            mobileNumber,
             password: hashedPassword,
         });
 
         const userInfo = {
             name: newUser.name,
             email: newUser.email,
-            mobileNumber: newUser.mobileNumber,
-            __id: newUser.__id
+            _id: newUser._id
         };
 
         return response.status(200).json({
@@ -81,9 +80,9 @@ export const register = async (request, response) => {
 
 export const login = async (request, response) => {
     try {
-        const { email, mobileNumber, password } = request.body;
+        const { email, password } = request.body;
 
-        if (!email || !mobileNumber || !password) {
+        if (!email || !password) {
             return response.status(400).json({
                 success: false,
                 message: "Please enter All fields",
@@ -112,8 +111,7 @@ export const login = async (request, response) => {
         const userInfo = {
             name: user.name,
             email: user.email,
-            mobileNumber: user.mobileNumber,
-            __id: user.__id
+            id: user._id
         };
 
         return response.status(200).json({
@@ -123,6 +121,47 @@ export const login = async (request, response) => {
         });
 
     } catch (err) {
+        return response.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+export const resetPassword = async (request, response) => {
+    try {
+        const { email, password } = request.body;
+
+        if (!email || !password) {
+            return response.status(400).json({
+                success: false,
+                message: "Please enter All fields",
+            });
+        }
+
+        const user = await service.getOneByEmail(email);
+
+        if (!user) {
+            console.log(user);
+            return response.status(401).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await service.updateUserByEmail(email, {
+            password: hashedPassword
+        });
+
+        return response.status(200).json({
+            success: true,
+            message: "Password has been reset successfully"
+        });
+
+    } catch (error) {
         return response.status(500).json({
             success: false,
             message: err.message
