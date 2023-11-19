@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, "Email is required"],
-        // unique : true,
+        unique: true,
         validate: validator.isEmail,
     },
 
@@ -34,6 +34,15 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+
+    isBanned: {
+        type: Boolean,
+        default: false
+    },
+
+    banTime: {
+        type: Date,
     },
 });
 

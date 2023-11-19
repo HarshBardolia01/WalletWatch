@@ -83,7 +83,8 @@ const ForgotPassword = () => {
         try {
             const response = await axios.post(verifyOtpApi, {
                 "email": userInfo.email,
-                "otp": userInfo.otp
+                "otp": userInfo.otp,
+                "isBanAllowed": false
             });
 
             console.log(response.data, response.status);

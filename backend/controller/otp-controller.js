@@ -172,7 +172,7 @@ export const sendOTP = async (request, response) => {
 
 export const verifyOTP = async (request, response) => {
     try {
-        const { email, otp } = request.body;
+        const { email, otp, isBanAllowed } = request.body;
 
         // error handling
         if (!email || !otp) {
@@ -208,11 +208,24 @@ export const verifyOTP = async (request, response) => {
             clearOtp(email);
         }
 
-        const message = (isValid ? "OTP verified successfully" : "Invalid OTP");
+        if (isValid) {
+            return response.status(200).json({
+                success: true,
+                message: "OTP Verified Successfully"
+            });
+        } else if (isBanAllowed) {
+            
+            const banned = await userService.banUser(email);
+
+            return response.status(200).json({
+                success: false,
+                message: "Invalid OTP! You Account has been blocked!"
+            });
+        }
 
         return response.status(200).json({
-            success: isValid,
-            message: message
+            success: false,
+            message: "Invalid OTP"
         });
 
     } catch (err) {
