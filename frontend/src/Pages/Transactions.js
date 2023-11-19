@@ -38,36 +38,35 @@ const Transactions = () => {
     const [endDate, updateEndDate] = useState(null);
     const [currentUser, updateCurrentUser] = useState(null);
 
-    useEffect(() => {
-        const user = localStorage.getItem("user");
-        if (!user) {
-            updateRedirect(true);
-        } else {
-            const obj = JSON.parse(user);
-            updateCurrentUser(obj);
-        }
-    }, [currentUser]);
-
-    // eslint-disable-next-line
-    const fetchTransaction = async () => {
+    const fetchTransaction = () => {
+        console.log(currentUser);
         try {
-            const { data } = await axios.post(getTransactionsApi, {
-                userId: currentUser.id,
-                frequency: frequency,
-                startDate: startDate,
-                endDate: endDate,
-                transactionType: type,
-            });
-
-            updateTransactions(data.transactions);
+            const requestOptions = {
+                method: "POST",
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    frequency: frequency,
+                    startDate: startDate,
+                    endDate: endDate,
+                    transactionType: type,
+                }),
+            };
+            return fetch(getTransactionsApi, requestOptions)
+                .then((res) => res.json())
+                .then((d) => console.log(d));
+            // const response = axios.post(getTransactionsApi, {
+            //     userId: currentUser.id,
+            //     frequency: frequency,
+            //     startDate: startDate,
+            //     endDate: endDate,
+            //     transactionType: type,
+            // });
+            // console.log(response.data.transactions);
+            // updateTransactions(data.transactions);
         } catch (error) {
             console.log(error.message);
         }
     };
-
-    useEffect(() => {
-        fetchTransaction();
-    }, [currentUser, fetchTransaction]);
 
     const addTransaction = async (event) => {
         try {
@@ -92,6 +91,7 @@ const Transactions = () => {
 
             if (response.data.success) {
                 //
+                fetchTransaction();
             } else {
                 // error
             }
@@ -129,10 +129,10 @@ const Transactions = () => {
 
             if (response.data.success) {
                 //
+                fetchTransaction();
             } else {
                 // error
             }
-
         } catch (error) {
             // TODO: Error handling
         }
@@ -149,14 +149,30 @@ const Transactions = () => {
 
             if (response.data.success) {
                 //
+                fetchTransaction();
             } else {
                 // error
             }
-
         } catch (error) {
             // TODO: error handling
         }
     };
+
+    useEffect(() => {
+        const user = localStorage.getItem("user");
+        if (!user) {
+            updateRedirect(true);
+        } else {
+            const obj = JSON.parse(user);
+            updateCurrentUser(obj);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchTransaction();
+        }
+    }, [currentUser]);
 
     if (redirect) {
         return <Navigate to="/login" />;
@@ -191,7 +207,7 @@ const Transactions = () => {
                     onRowInserted={(e) => addTransaction(e)}
                     onRowUpdated={(e) => updateTransaction(e)}
                     onRowRemoved={(e) => deleteTransaction(e)}
-                    onSaved={fetchTransaction}
+                    // onSaved={fetchTransaction}
                 >
                     <Paging enabled={true} pageSize={10} />
                     <Editing
@@ -227,8 +243,15 @@ const Transactions = () => {
                     </Editing>
                     <Column dataField="date" dataType="date" />
                     <Column dataField="title" />
-                    <Column dataField="amount" dataType="number" alignment="left" />
-                    <Column dataField="transactionType" datatype="transactionType">
+                    <Column
+                        dataField="amount"
+                        dataType="number"
+                        alignment="left"
+                    />
+                    <Column
+                        dataField="transactionType"
+                        datatype="transactionType"
+                    >
                         <Lookup
                             dataSource={transactionType}
                             valueExpr="type"
