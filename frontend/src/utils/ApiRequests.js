@@ -9,3 +9,4 @@ export const getTransactionsApi = `${baseUrl}/api/transaction/getAllTransaction`
 export const updateTransactionApi = `${baseUrl}/api/transaction/updateById`;
 export const deleteTransactionApi = `${baseUrl}/api/transaction/deleteById`;
 export const getAllTransactionByUserIdApi = `${baseUrl}/api/transaction/getAllTransactionByUserId`;
+export const resetPasswordApi = `${baseUrl}/api/user/resetPassword`;

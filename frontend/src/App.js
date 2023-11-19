@@ -5,6 +5,7 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Layout from "./Layout";
 import Transactions from "./Pages/Transactions";
+import ForgotPassword from "./Pages/ForgotPassword"
 
 function App() {
     return (
@@ -12,7 +13,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<Layout />}>
-                        
+
                         <Route index element={
                             <Transactions />
                         } />
@@ -24,7 +25,11 @@ function App() {
                         <Route path="/login" element={
                             <Login />
                         } />
-                        
+
+                        <Route path="/resetPassword" element={
+                            <ForgotPassword />
+                        } />
+
                     </Route>
                 </Routes>
             </BrowserRouter>

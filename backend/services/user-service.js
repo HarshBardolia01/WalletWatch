@@ -60,10 +60,13 @@ export const getUserById = async(id) => {
 }
 
 export const updateUserById = async(id, request) => {
-    const user = await User.findById(id);
-    user = request;
-    await user.save();
-    return user;
+    const updated = await User.updateOne({_id: id, ...request});
+    return updated;
+}
+
+export const updateUserByEmail = async (email, request) => {
+    const updated = await User.updateOne({email: email}, request);
+    return updated;
 }
 
 export const deleteUserById = async(id) => {

@@ -13,4 +13,9 @@ router.post(
     controller.login
 );
 
+router.post(
+    "/resetPassword",
+    controller.resetPassword
+);
+
 export default router;

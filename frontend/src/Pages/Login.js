@@ -198,7 +198,7 @@ const Login = () => {
                             label="Password"
                             value={userInfo.password}
                             name="password"
-                            type={!showPassword ? "password" : "text"}
+                            type={!showPassword || credentialsValidated ? "password" : "text"}
                             onChange={handleUserInfoChange}
                             InputProps={{
                                 endAdornment: (
@@ -308,7 +308,11 @@ const Login = () => {
                         </>
                     }
 
-                    <Grid item xs={12} textAlign={"center"}>
+                    <Grid item xs={6} textAlign={"center"}>
+                        <Link to="/resetPassword">Forgot Password?</Link>{" "}
+                    </Grid>
+
+                    <Grid item xs={6} textAlign={"center"}>
                         <Link to="/register">New user?</Link>{" "}
                     </Grid>
                 </Grid>

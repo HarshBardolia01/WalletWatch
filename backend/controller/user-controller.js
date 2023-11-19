@@ -127,3 +127,44 @@ export const login = async (request, response) => {
         });
     }
 }
+
+export const resetPassword = async (request, response) => {
+    try {
+        const { email, password } = request.body;
+
+        if (!email || !password) {
+            return response.status(400).json({
+                success: false,
+                message: "Please enter All fields",
+            });
+        }
+
+        const user = await service.getOneByEmail(email);
+
+        if (!user) {
+            console.log(user);
+            return response.status(401).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await service.updateUserByEmail(email, {
+            password: hashedPassword
+        });
+
+        return response.status(200).json({
+            success: true,
+            message: "Password has been reset successfully"
+        });
+
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
