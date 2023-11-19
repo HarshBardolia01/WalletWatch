@@ -9,6 +9,7 @@ import { IconButton, InputAdornment } from "@mui/material";
 import axios from "axios";
 import { loginApi, sendOtpApi, verifyOtpApi } from "../utils/ApiRequests.js";
 import { Navigate } from "react-router-dom";
+import Header from "../Components/Header.js";
 
 const Login = () => {
     const [userInfo, updateUserInfo] = useState({
@@ -24,10 +25,7 @@ const Login = () => {
     const [showPassword, updateShowPassword] = useState(false);
     const [validEmail, updateValidEmail] = useState(true);
     const [credentialsValidated, updateCredentialsValidate] = useState(false);
-    const [showIncorrectCredentialsError, updateShowIncorrectCredentialsError] = useState(false);
     const [showIncorrectOtp, updateShowIncorrectOtp] = useState(false); //to do: if this becomes false -> block the account & send email to the email
-    const [userVerified, updateUserVerified] = useState(false); //to redirect to home page and fetch transactions
-    const [otpSent, updateOtpSent] = useState(false); //if otp send -> show textinput field
     const [otpOptions, updateOtpOptions] = useState([]);
 
     useEffect(() => {
@@ -40,6 +38,8 @@ const Login = () => {
     }, []);
 
     const handleSelectOTP = (e) => {
+        updateError(false);
+        updateErrorMessage("");
         updateUserInfo({ ...userInfo, otp: e.target.value });
     };
 
@@ -48,10 +48,15 @@ const Login = () => {
     };
 
     const handleUserInfoChange = (e) => {
+        updateError(false);
+        updateErrorMessage("");
         updateUserInfo({ ...userInfo, [e.target.name]: e.target.value });
     };
 
     const sendOtp = async () => {
+        updateError(false);
+        updateErrorMessage("");
+
         try {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
@@ -74,6 +79,8 @@ const Login = () => {
     const handleLoginButton = async (e) => {
 
         e.preventDefault();
+        updateError(false);
+        updateErrorMessage("");
 
         try {
             const response = await axios.post(loginApi, {
@@ -85,13 +92,14 @@ const Login = () => {
 
             if (response.data.success) {
                 updateCredentialsValidate(true);
-                updateShowIncorrectCredentialsError(false);
                 console.log(response.data);
                 updateCurrentUser(response.data.user);
                 sendOtp();
             } else {
-                updateShowIncorrectCredentialsError(true);
+                updateError(true);
+                updateErrorMessage(response.data.message);
             }
+
         } catch (error) {
             updateError(true);
             updateErrorMessage(error.response.data.message);
@@ -100,6 +108,8 @@ const Login = () => {
 
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
+        updateError(false);
+        updateErrorMessage("");
 
         try {
             const response = await axios.post(verifyOtpApi, {
@@ -112,7 +122,6 @@ const Login = () => {
             if (response.data.success) {
                 localStorage.setItem("user", JSON.stringify(currentUser));
                 updateRedirect(true);
-                updateUserVerified(true);
             } else {
                 updateShowIncorrectOtp(true);
                 console.log("Invalid OTP");
@@ -135,167 +144,176 @@ const Login = () => {
         }
     }, [userInfo.email]);
 
-    useEffect(() => {
-        if (credentialsValidated) {
-            updateOtpSent(true);
-        }
-    }, [credentialsValidated]);
-
     if (redirect) {
         return <Navigate to="/" />
     }
 
     return (
-        <Box
-            border={"3px solid grey"}
-            borderRadius={"15px"}
-            width={"35%"}
-            margin={"5% auto"}
-            p={"35px 30px"}
-        >
+        <>
+            <Header />
+            <Box
+                border={"3px solid grey"}
+                borderRadius={"15px"}
+                width={"40%"}
+                margin={"5% auto"}
+                p={"35px 40px"}
+            >
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} textAlign={"center"}>
-                    <h1>Login</h1>
-                </Grid>
-
-                {
-                    error &&
-
+                <Grid container spacing={4}>
                     <Grid item xs={12} textAlign={"center"}>
-                        <Alert severity="error" fullWidth>
-                            {errorMessage}
-                        </Alert>
-                    </Grid>
-                }
-
-                <Grid item xs={12} textAlign={"center"}>
-                    <TextField
-                        disabled={credentialsValidated}
-                        required
-                        fullWidth
-                        error={!validEmail}
-                        helperText={
-                            !validEmail ? "Enter valid email" : ""
-                        }
-                        label="Email"
-                        value={userInfo.email}
-                        name="email"
-                        onChange={handleUserInfoChange}
-                    />
-                </Grid>
-
-                <Grid item xs={12} textAlign={"center"}>
-                    <TextField
-                        disabled={credentialsValidated}
-                        required
-                        fullWidth
-                        label="Password"
-                        value={userInfo.password}
-                        name="password"
-                        type={!showPassword ? "password" : "text"}
-                        onChange={handleUserInfoChange}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        disabled={credentialsValidated}
-                                        aria-label="toggle password visibility"
-                                        onClick={
-                                            handleClickShowPassword
-                                        }
-                                        edge="end"
-                                    >
-                                        {showPassword ? (
-                                            <VisibilityOff />
-                                        ) : (
-                                            <Visibility />
-                                        )}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                </Grid>
-
-                {
-                    !credentialsValidated &&
-
-                    <Grid item xs={12} textAlign={"center"}>
-                        <Button
-                            variant="contained"
-                            onClick={handleLoginButton}
-                            disabled={
-                                !validEmail || userInfo.email.length === 0
-                            }
-                            style={{ textTransform: "none", padding: "14px 0px" }}
-                            fullWidth
-                        >
-                            Verify Credentials
-                        </Button>
+                        <h1>Login</h1>
                     </Grid>
 
-                }
+                    {
+                        error &&
 
-                {
-                    credentialsValidated &&
-
-                    <>
-                        <Grid item xs={12} textAlign={"center"} >
-                            <Alert severity="success" fullWidth>
-                                OTP sent to your email. Verify the OTP:{" "}
+                        <Grid item xs={12} textAlign={"center"}>
+                            <Alert severity="error" fullWidth>
+                                {errorMessage}
                             </Alert>
                         </Grid>
+                    }
 
+                    <Grid item xs={12} textAlign={"center"}>
+                        <TextField
+                            disabled={credentialsValidated}
+                            required
+                            fullWidth
+                            error={!validEmail}
+                            helperText={
+                                !validEmail ? "Enter valid email" : ""
+                            }
+                            label="Email"
+                            value={userInfo.email}
+                            name="email"
+                            onChange={handleUserInfoChange}
+                        />
+                    </Grid>
 
-                        {
-                            otpOptions.map((option) => {
-                                return (
-                                    <Grid item xs={3} textAlign={"center"} >
-                                        <Button
-                                            variant={
-                                                userInfo.otp === option
-                                                    ? "contained"
-                                                    : "outlined"
+                    <Grid item xs={12} textAlign={"center"}>
+                        <TextField
+                            disabled={credentialsValidated}
+                            required
+                            fullWidth
+                            label="Password"
+                            value={userInfo.password}
+                            name="password"
+                            type={!showPassword ? "password" : "text"}
+                            onChange={handleUserInfoChange}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            disabled={credentialsValidated}
+                                            aria-label="toggle password visibility"
+                                            onClick={
+                                                handleClickShowPassword
                                             }
-                                            value={option}
-                                            onClick={handleSelectOTP}
+                                            edge="end"
                                         >
-                                            {option}
-                                        </Button>
-                                    </Grid>
-                                )
-                            })
-                        }
+                                            {showPassword ? (
+                                                <VisibilityOff />
+                                            ) : (
+                                                <Visibility />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </Grid>
+
+                    {
+                        !credentialsValidated &&
 
                         <Grid item xs={12} textAlign={"center"}>
                             <Button
-                                fullWidth
                                 variant="contained"
+                                onClick={handleLoginButton}
                                 disabled={
-                                    userInfo.otp === "" || showIncorrectOtp
+                                    !validEmail || userInfo.email.length === 0 || userInfo.password.length === 0
                                 }
-                                onClick={handleVerifyOtp}
+                                style={{ textTransform: "none", padding: "14px 0px" }}
+                                fullWidth
                             >
-                                Verify
+                                Verify Credentials
                             </Button>
                         </Grid>
 
-                        {
-                            showIncorrectOtp &&
-                            (
-                                <Grid item xs={12} textAlign={"center"}>
-                                    <Alert severity="error">
-                                        Incorrect OTP. Account has been locked.
+                    }
+
+                    {
+                        credentialsValidated &&
+
+                        <>
+                            {
+                                !showIncorrectOtp &&
+
+                                <Grid item xs={12} textAlign={"center"} >
+                                    <Alert severity="success" fullWidth>
+                                        OTP sent to your email. Verify the OTP:{" "}
                                     </Alert>
                                 </Grid>
-                            )
-                        }
-                    </>
-                }
+                            }
 
-            </Grid>
-        </Box>
+
+                            {!showIncorrectOtp &&
+
+                                otpOptions.map((option) => {
+                                    return (
+                                        <Grid item xs={3} textAlign={"center"} >
+                                            <Button
+                                                variant={
+                                                    userInfo.otp === option
+                                                        ? "contained"
+                                                        : "outlined"
+                                                }
+                                                value={option}
+                                                onClick={handleSelectOTP}
+                                            >
+                                                {option}
+                                            </Button>
+                                        </Grid>
+                                    )
+                                })
+                            }
+
+                            {
+                                !showIncorrectOtp &&
+
+                                <Grid item xs={12} textAlign={"center"}>
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        disabled={
+                                            userInfo.otp === "" || showIncorrectOtp
+                                        }
+                                        onClick={handleVerifyOtp}
+                                    >
+                                        Verify
+                                    </Button>
+                                </Grid>
+                            }
+
+                            {
+                                showIncorrectOtp &&
+                                (
+                                    <Grid item xs={12} textAlign={"center"}>
+                                        <Alert severity="error">
+                                            Incorrect OTP.
+                                        </Alert>
+                                    </Grid>
+                                )
+                            }
+                        </>
+                    }
+
+                    <Grid item xs={12} textAlign={"center"}>
+                        <Link to="/register">New user?</Link>{" "}
+                    </Grid>
+                </Grid>
+            </Box>
+        </>
     );
 };
 

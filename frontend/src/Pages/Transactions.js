@@ -10,7 +10,6 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import "devextreme-react/text-area";
 import { Item } from "devextreme-react/form";
-import transactionData from "../Transaction-Data/transactionData";
 import { Box } from "@mui/material";
 import category from "../Transaction-Data/category";
 import transactionType from "../Transaction-Data/transactionType";
@@ -22,18 +21,24 @@ import {
     updateTransactionApi,
     deleteTransactionApi,
 } from "../utils/ApiRequests.js";
+import Header from "../Components/Header.js";
 
 const notesEditorOptions = { height: 100 };
+
 const Transactions = () => {
     const [redirect, updateRedirect] = useState(false);
     const [transactions, updateTransactions] = useState([]);
+    // eslint-disable-next-line
     const [frequency, updateFrequency] = useState("custom");
+    // eslint-disable-next-line
     const [type, updateType] = useState("all");
+    // eslint-disable-next-line
     const [startDate, updateStartDate] = useState(null);
+    // eslint-disable-next-line
     const [endDate, updateEndDate] = useState(null);
     const [currentUser, updateCurrentUser] = useState(null);
 
-    useEffect(async () => {
+    useEffect(() => {
         const user = localStorage.getItem("user");
         if (!user) {
             updateRedirect(true);
@@ -41,8 +46,9 @@ const Transactions = () => {
             const obj = JSON.parse(user);
             updateCurrentUser(obj);
         }
-    }, []);
+    }, [currentUser]);
 
+    // eslint-disable-next-line
     const fetchTransaction = async () => {
         try {
             const { data } = await axios.post(getTransactionsApi, {
@@ -61,7 +67,7 @@ const Transactions = () => {
 
     useEffect(() => {
         fetchTransaction();
-    }, [currentUser, frequency, endDate, type, startDate]);
+    }, [currentUser, fetchTransaction]);
 
     const addTransaction = async (event) => {
         try {
@@ -83,6 +89,12 @@ const Transactions = () => {
                 date: date,
                 userId: currentUser.id,
             });
+
+            if (response.data.success) {
+                //
+            } else {
+                // error
+            }
         } catch (error) {
             // TODO: Error handling
         }
@@ -114,6 +126,13 @@ const Transactions = () => {
             });
 
             console.log(response);
+
+            if (response.data.success) {
+                //
+            } else {
+                // error
+            }
+
         } catch (error) {
             // TODO: Error handling
         }
@@ -123,105 +142,110 @@ const Transactions = () => {
         try {
             const transactionId = event.data._id;
             const userId = currentUser.id;
-            const params = {
-                transactionId: transactionId,
-                userId: userId,
-            };
-
             const apiUrl = `${deleteTransactionApi}/${transactionId}/${userId}`;
 
             const response = await axios.delete(apiUrl);
             console.log(response);
+
+            if (response.data.success) {
+                //
+            } else {
+                // error
+            }
+
         } catch (error) {
             // TODO: error handling
         }
     };
 
     if (redirect) {
-        return <Navigate to="/register" />;
+        return <Navigate to="/login" />;
     }
 
     return (
-        <Box
-            sx={{
-                width: "90%",
-                p: "20px",
-                display: "block",
-                margin: "10px auto",
-            }}
-        >
-            <h2
-                style={{
-                    textAlign: "center",
-                    color: "rgb(4, 74, 160)",
-                    fontFamily: "sans-serif",
+        <>
+            <Header currentUser />
+            <Box
+                sx={{
+                    width: "90%",
+                    p: "20px",
+                    display: "block",
+                    margin: "10px auto",
                 }}
             >
-                Welcome {currentUser?.name}!
-            </h2>
-            <DataGrid
-                dataSource={transactions}
-                keyExpr="_id"
-                showBorders={true}
-                allowColumnResizing
-                repaintChangesOnly={true}
-                onRowInserted={(e) => addTransaction(e)}
-                onRowUpdated={(e) => updateTransaction(e)}
-                onRowRemoved={(e) => deleteTransaction(e)}
-                onSaved={fetchTransaction}
-            >
-                <Paging enabled={true} pageSize={10} />
-                <Editing
-                    refreshMode="full"
-                    mode="popup"
-                    useIcons={true}
-                    allowAdding={true}
-                    allowUpdating={true}
-                    allowDeleting={true}
+                <h2
+                    style={{
+                        textAlign: "center",
+                        color: "rgb(4, 74, 160)",
+                        fontFamily: "sans-serif",
+                    }}
                 >
-                    <Popup
-                        title="Transaction Information"
-                        showTitle
-                        width={"60%"}
-                        height={"60%"}
-                    />
-                    <Form>
-                        <Item itemType="group" colCount={2} colSpan={2}>
-                            <Item dataField="title" isRequired />
-                            <Item dataField="transactionType" isRequired />
-                            <Item dataField="amount" isRequired />
-                            <Item dataField="date" isRequired />
-                            <Item dataField="category" isRequired />
-                            <Item
-                                dataField="description"
-                                editorType="dxTextArea"
-                                colSpan={2}
-                                editorOptions={notesEditorOptions}
-                                isRequired
-                            />
-                        </Item>
-                    </Form>
-                </Editing>
-                <Column dataField="date" dataType="date" />
-                <Column dataField="title" />
-                <Column dataField="amount" dataType="number" alignment="left" />
-                <Column dataField="transactionType" datatype="transactionType">
-                    <Lookup
-                        dataSource={transactionType}
-                        valueExpr="type"
-                        displayExpr="name"
-                    />
-                </Column>
-                <Column dataField="category" dataType="category">
-                    <Lookup
-                        dataSource={category}
-                        valueExpr="type"
-                        displayExpr="name"
-                    />
-                </Column>
-                <Column dataField="description" visible={false} />
-            </DataGrid>
-        </Box>
+                    Welcome {currentUser?.name}!
+                </h2>
+                <DataGrid
+                    dataSource={transactions}
+                    keyExpr="_id"
+                    showBorders={true}
+                    allowColumnResizing
+                    repaintChangesOnly={true}
+                    onRowInserted={(e) => addTransaction(e)}
+                    onRowUpdated={(e) => updateTransaction(e)}
+                    onRowRemoved={(e) => deleteTransaction(e)}
+                    onSaved={fetchTransaction}
+                >
+                    <Paging enabled={true} pageSize={10} />
+                    <Editing
+                        refreshMode="full"
+                        mode="popup"
+                        useIcons={true}
+                        allowAdding={true}
+                        allowUpdating={true}
+                        allowDeleting={true}
+                    >
+                        <Popup
+                            title="Transaction Information"
+                            showTitle
+                            width={"60%"}
+                            height={"60%"}
+                        />
+                        <Form>
+                            <Item itemType="group" colCount={2} colSpan={2}>
+                                <Item dataField="title" isRequired />
+                                <Item dataField="transactionType" isRequired />
+                                <Item dataField="amount" isRequired />
+                                <Item dataField="date" isRequired />
+                                <Item dataField="category" isRequired />
+                                <Item
+                                    dataField="description"
+                                    editorType="dxTextArea"
+                                    colSpan={2}
+                                    editorOptions={notesEditorOptions}
+                                    isRequired
+                                />
+                            </Item>
+                        </Form>
+                    </Editing>
+                    <Column dataField="date" dataType="date" />
+                    <Column dataField="title" />
+                    <Column dataField="amount" dataType="number" alignment="left" />
+                    <Column dataField="transactionType" datatype="transactionType">
+                        <Lookup
+                            dataSource={transactionType}
+                            valueExpr="type"
+                            displayExpr="name"
+                        />
+                    </Column>
+                    <Column dataField="category" dataType="category">
+                        <Lookup
+                            dataSource={category}
+                            valueExpr="type"
+                            displayExpr="name"
+                        />
+                    </Column>
+                    <Column dataField="description" visible={false} />
+                </DataGrid>
+            </Box>
+        </>
     );
 };
 

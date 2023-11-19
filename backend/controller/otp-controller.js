@@ -2,6 +2,7 @@ import NodeCache from "node-cache"
 import nodemailer from "nodemailer"
 import moment from "moment";
 import fast2sms from "fast-two-sms"
+import * as userService from "../services/user-service.js";
 
 // cache to store the OTPs
 const otpCache = new NodeCache({ stdTTL: 300 });
@@ -81,6 +82,16 @@ export const sendOTP = async (request, response) => {
                 success: false,
                 message: "Please give email",
             })
+        }
+
+        if (!isLogin) {
+            const userExists = await userService.getOneByEmail(email);
+            if (userExists) {
+                return response.status(409).json({
+                    success: false,
+                    message: "User already Exists",
+                });
+            }
         }
 
         // generating email to be sent
