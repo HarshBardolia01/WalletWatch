@@ -40,19 +40,6 @@ const Transactions = () => {
         } else {
             const obj = JSON.parse(user);
             updateCurrentUser(obj);
-            // try {
-            //     console.log(obj);
-
-            //     const { data } = await axios.post(getAllTransactionByUserId, {
-            //         userId: obj.id,
-            //     });
-
-            //     console.log(data);
-            //     updateTransactions(data.transactions);
-
-            // } catch (error) {
-            //     console.log(error.message);
-            // }
         }
     }, []);
 
@@ -157,19 +144,27 @@ const Transactions = () => {
     return (
         <Box
             sx={{
-                width: "80%",
+                width: "90%",
                 p: "20px",
                 display: "block",
                 margin: "10px auto",
             }}
         >
+            <h2
+                style={{
+                    textAlign: "center",
+                    color: "rgb(4, 74, 160)",
+                    fontFamily: "sans-serif",
+                }}
+            >
+                Welcome {currentUser?.name}!
+            </h2>
             <DataGrid
                 dataSource={transactions}
                 keyExpr="_id"
                 showBorders={true}
                 allowColumnResizing
                 repaintChangesOnly={true}
-                // onEditingStart={updateCurrKey()}
                 onRowInserted={(e) => addTransaction(e)}
                 onRowUpdated={(e) => updateTransaction(e)}
                 onRowRemoved={(e) => deleteTransaction(e)}

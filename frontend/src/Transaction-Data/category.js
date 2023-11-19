@@ -4,7 +4,7 @@ const category = [
     { type: "Transit", name: "Transit" },
     { type: "Mutual Funds", name: "Mutual Funds" },
     { type: "Luxury", name: "Luxury" },
-    { type: "basic requirements", name: "basic requirements" },
+    { type: "basic requirements", name: "Basic Requirements" },
     { type: "Donate", name: "Donate" },
     { type: "Other", name: "Other" },
 ];
