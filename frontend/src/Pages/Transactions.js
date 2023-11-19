@@ -21,7 +21,7 @@ import {
     updateTransactionApi,
     deleteTransactionApi,
 } from "../utils/ApiRequests.js";
-import Header from "../Components/Header.js";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const notesEditorOptions = { height: 100 };
 
@@ -43,6 +43,9 @@ const Transactions = () => {
         try {
             const requestOptions = {
                 method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     userId: currentUser.id,
                     frequency: frequency,
@@ -51,18 +54,10 @@ const Transactions = () => {
                     transactionType: type,
                 }),
             };
+
             return fetch(getTransactionsApi, requestOptions)
                 .then((res) => res.json())
-                .then((d) => console.log(d));
-            // const response = axios.post(getTransactionsApi, {
-            //     userId: currentUser.id,
-            //     frequency: frequency,
-            //     startDate: startDate,
-            //     endDate: endDate,
-            //     transactionType: type,
-            // });
-            // console.log(response.data.transactions);
-            // updateTransactions(data.transactions);
+                .then((d) => updateTransactions(d.transactions));
         } catch (error) {
             console.log(error.message);
         }
@@ -157,6 +152,10 @@ const Transactions = () => {
             // TODO: error handling
         }
     };
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        updateRedirect(true);
+    }
 
     useEffect(() => {
         const user = localStorage.getItem("user");
@@ -172,6 +171,7 @@ const Transactions = () => {
         if (currentUser) {
             fetchTransaction();
         }
+        // eslint-disable-next-line
     }, [currentUser]);
 
     if (redirect) {
@@ -180,7 +180,19 @@ const Transactions = () => {
 
     return (
         <>
-            <Header currentUser />
+            <div className="header-bar">
+                <h1 style={{ marginLeft: "10px" }}>WalletWatch</h1>
+
+                {
+                    currentUser &&
+
+                    <LogoutIcon
+                        fontSize="large"
+                        className="header-icon"
+                        onClick={handleLogout}
+                    />
+                }
+            </div>
             <Box
                 sx={{
                     width: "90%",
@@ -207,7 +219,7 @@ const Transactions = () => {
                     onRowInserted={(e) => addTransaction(e)}
                     onRowUpdated={(e) => updateTransaction(e)}
                     onRowRemoved={(e) => deleteTransaction(e)}
-                    // onSaved={fetchTransaction}
+                // onSaved={fetchTransaction}
                 >
                     <Paging enabled={true} pageSize={10} />
                     <Editing
