@@ -60,7 +60,8 @@ const Login = () => {
         try {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
-                "isLogin": true
+                "isLogin": true,
+                "useCase": "login"
             });
 
             console.log(response.data);
@@ -114,7 +115,8 @@ const Login = () => {
         try {
             const response = await axios.post(verifyOtpApi, {
                 "email": userInfo.email,
-                "otp": userInfo.otp
+                "otp": userInfo.otp,
+                "isBanAllowed": true
             });
 
             console.log(response.data, response.status);
@@ -124,11 +126,10 @@ const Login = () => {
                 updateRedirect(true);
             } else {
                 updateShowIncorrectOtp(true);
+                updateError(true);
+                updateErrorMessage(response.data.message);
                 console.log("Invalid OTP");
             }
-
-            updateError(false);
-            updateErrorMessage("");
 
         } catch (error) {
             updateError(true);
@@ -295,16 +296,6 @@ const Login = () => {
                                 </Grid>
                             }
 
-                            {
-                                showIncorrectOtp &&
-                                (
-                                    <Grid item xs={12} textAlign={"center"}>
-                                        <Alert severity="error">
-                                            Incorrect OTP.
-                                        </Alert>
-                                    </Grid>
-                                )
-                            }
                         </>
                     }
 

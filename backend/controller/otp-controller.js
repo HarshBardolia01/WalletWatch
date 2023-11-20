@@ -1,19 +1,9 @@
 import NodeCache from "node-cache"
 import nodemailer from "nodemailer"
-import moment from "moment";
-import fast2sms from "fast-two-sms"
 import * as userService from "../services/user-service.js";
 
 // cache to store the OTPs
 const otpCache = new NodeCache({ stdTTL: 300 });
-
-// this is like a map in cpp, [key, value] ==> [email, wrongEmailCnt]
-const wrongOtpCntEmails = new NodeCache({ stdTTL: 7200 });
-
-// this are the Emails banned as they entered
-// wrong OTP multiple times in span of 2 hours
-// [key, value] ==> [email, time at which it is banned]
-const bannedEmails = new NodeCache({ stdTTL: 18000 });
 
 // generates random 6 digit OTP, and stores it to the cache
 function generateOtp(key) {
@@ -36,69 +26,79 @@ function clearOtp(key) {
     otpCache.del(key);
 }
 
-// checks is the email is already been banned or not
-function isEmailBanned(email) {
-    const exists = bannedEmails.has(email);
-    return exists;
-}
-
-function getWrongCount(email) {
-    const count = wrongOtpCntEmails.get(email);
-    if (!count) return 0;
-    return count;
-}
-
-function increaseWrongCount(email) {
-    const currentCount = getWrongCount(email);
-    const currentTime = moment();
-
-    if (currentCount === 0) {
-
-        const obj = {
-            "count": 1,
-            "time": currentTime,
-            "ttl": 7200
-        };
-
-        wrongOtpCntEmails.set(email, obj, 7200);
-
-    } else {
-        const curObj = wrongOtpCntEmails.get(email);
-        const previousTime = curObj.time;
-        const differenceInTime = currentTime.diff(previousTime, "seconds");
-
-
-    }
-}
-
-export const sendOTP = async (request, response) => {
+export const sendEmail = async (request, response) => {
     try {
-        const { email } = request.body;
-        const isLogin = request.body.isLogin;
 
-        // error handling
-        if (!email) {
-            return response.status(400).json({
-                success: false,
-                message: "Please give email",
-            })
+        const { email, name, useCase } = request;
+        let htmlTemplate = `<h1>Error</h1>`;
+        const otp = useCase !== "blockEmail" ? request.otp : "";
+        let subjectMessage = "";
+
+        if (useCase === "register") {
+            subjectMessage = "OTP for Registering - Wallet Watch!"
+            htmlTemplate = `
+            <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                    <div style="border-bottom:1px solid #eee">
+                        <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">WalletWatch</a>
+                    </div>
+                    <p style="font-size:1.1em">Hi ${name},</p>
+                    <p>Thank you for registering for WalletWatch. Use the following OTP to complete your Registration procedure. OTP is valid for 5 minutes</p>
+                    <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
+                    <p style="font-size:0.9em;">Regards,<br />WalletWatch</p>
+                    <hr style="border:none;border-top:1px solid #eee" />
+                </div>
+            </div>
+            `
+        } else if (useCase === "login") {
+            subjectMessage = "OTP for Login - Wallet Watch!"
+            htmlTemplate = `
+            <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                    <div style="border-bottom:1px solid #eee">
+                        <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">WalletWatch</a>
+                    </div>
+                    <p style="font-size:1.1em">Hi ${name},</p>
+                    <p>Thank you for choosing WalletWatch. Use the following OTP to complete your Login procedure. OTP is valid for 5 minutes</p>
+                    <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
+                    <p style="font-size:0.9em;">Regards,<br />WalletWatch</p>
+                    <hr style="border:none;border-top:1px solid #eee" />
+                </div>
+            </div>
+            `
+        } else if (useCase === "resetPassword") {
+            subjectMessage = "OTP for Reseting Password - Wallet Watch!"
+            htmlTemplate = `
+            <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                    <div style="border-bottom:1px solid #eee">
+                        <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">WalletWatch</a>
+                    </div>
+                    <p style="font-size:1.1em">Hi ${name},</p>
+                    <p>Thank you for choosing WalletWatch. Use the following OTP to reset your password. OTP is valid for 5 minutes</p>
+                    <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
+                    <p style="font-size:0.9em;">Regards,<br />WalletWatch</p>
+                    <hr style="border:none;border-top:1px solid #eee" />
+                </div>
+            </div>
+            `
+        } else {
+            subjectMessage = "Account Blocked! - Wallet Watch"
+            htmlTemplate = `
+            <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                    <div style="border-bottom:1px solid #eee">
+                        <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">WalletWatch</a>
+                    </div>
+                    <p style="font-size:1.1em">Hi ${name},</p>
+                    <p>There has been a failed login attempt. Your account has been temporily blocked for 2 hours.</p>
+                    <p style="font-size:0.9em;">Regards,<br />WalletWatch</p>
+                    <hr style="border:none;border-top:1px solid #eee" />
+                </div>
+            </div>
+            `
         }
 
-        if (!isLogin) {
-            const userExists = await userService.getOneByEmail(email);
-            if (userExists) {
-                return response.status(409).json({
-                    success: false,
-                    message: "User already Exists",
-                });
-            }
-        }
-
-        // generating email to be sent
-        const otp = generateOtp(email);
-        console.log("OTP generated: ", otp);
-
-        // creating transporter who actually will mail the OTP
         let transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
             port: 465,
@@ -110,14 +110,12 @@ export const sendOTP = async (request, response) => {
             }
         });
 
-        // setting mail options (subject, body and to email id)
         var mailOptions = {
             to: email,
-            subject: "OTP for Registering to Wallet Watch!",
-            html: "<h3>OTP for email verification is </h3>" + "<h3 style='font-weight:bold;'>" + otp + "</h3>"
+            subject: subjectMessage,
+            html: htmlTemplate,
         };
 
-        // this is the part where email is being sent
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 return response.status(500).json({
@@ -126,39 +124,83 @@ export const sendOTP = async (request, response) => {
                 });
             }
 
-            // don't know what this is, it was in the documentation ig
             console.log('Message sent: %s', info.messageId);
             console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        });
 
-            const obj = {
-                "otp": otp,
+    } catch (error) {
+        console.log(error.message);
+        return response.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+export const sendOTP = async (request, response) => {
+    try {
+        const { email, useCase } = request.body;
+        const isLogin = request.body.isLogin;
+        let userName = request.body?.name;
+
+        if (!email) {
+            return response.status(400).json({
+                success: false,
+                message: "Please give email",
+            })
+        }
+
+        const userExists = await userService.getOneByEmail(email);
+
+        if (!isLogin) {
+            if (userExists) {
+                return response.status(409).json({
+                    success: false,
+                    message: "User already Exists",
+                });
+            }
+        } else {
+            userName = userExists.name;
+        }
+
+        const otp = generateOtp(email);
+        console.log("OTP generated: ", otp);
+
+        await sendEmail({
+            email: email,
+            name: userName,
+            otp: otp,
+            useCase: useCase
+        }, response);
+
+        const obj = {
+            "otp": otp,
+        }
+
+        if (isLogin) {
+            let options = [];
+            const min = 100000;
+            const max = 999999;
+
+            for (let i = 0; i < 3; i++) {
+                const currentOtp = Math.floor(Math.random() * (max - min + 1)) + min;
+                options.push(currentOtp.toString());
             }
 
-            if (isLogin) {
-                let options = [];
-                const min = 100000;
-                const max = 999999;
+            options.push(otp);
 
-                for (let i = 0; i < 3; i++) {
-                    const currentOtp = Math.floor(Math.random() * (max - min + 1)) + min;
-                    options.push(currentOtp.toString());
-                }
-
-                options.push(otp);
-
-                for (let i = options.length - 1; i > 0; i--) {
-                    let j = Math.floor(Math.random() * (i + 1));
-                    [options[i], options[j]] = [options[j], options[i]];
-                }
-
-                obj.options = options;
+            for (let i = options.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
             }
 
-            return response.status(200).json({
-                success: true,
-                otpInfo: obj,
-                message: "OTP sent successfully",
-            });
+            obj.options = options;
+        }
+
+        return response.status(200).json({
+            success: true,
+            otpInfo: obj,
+            message: "OTP sent successfully",
         });
 
     } catch (err) {
@@ -172,7 +214,7 @@ export const sendOTP = async (request, response) => {
 
 export const verifyOTP = async (request, response) => {
     try {
-        const { email, otp } = request.body;
+        const { email, otp, isBanAllowed } = request.body;
 
         // error handling
         if (!email || !otp) {
@@ -208,11 +250,32 @@ export const verifyOTP = async (request, response) => {
             clearOtp(email);
         }
 
-        const message = (isValid ? "OTP verified successfully" : "Invalid OTP");
+        if (isValid) {
+            return response.status(200).json({
+                success: true,
+                message: "OTP Verified Successfully"
+            });
+        } else if (isBanAllowed) {
+
+            const user = await userService.getOneByEmail(email);
+            const name = user.name;
+            const banned = await userService.banUser(email);
+
+            await sendEmail({
+                email: email,
+                name: name,
+                useCase: "blockEmail"
+            }, response);
+
+            return response.status(200).json({
+                success: false,
+                message: "Invalid OTP! You Account has been blocked!"
+            });
+        }
 
         return response.status(200).json({
-            success: isValid,
-            message: message
+            success: false,
+            message: "Invalid OTP"
         });
 
     } catch (err) {

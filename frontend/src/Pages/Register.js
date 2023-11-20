@@ -57,7 +57,8 @@ const Register = () => {
         try {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
-                "isLogin": false
+                "isLogin": false,
+                "useCase": "register"
             });
 
             console.log(response.data, response.status);
@@ -84,7 +85,8 @@ const Register = () => {
         try {
             const response = await axios.post(verifyOtpApi, {
                 "email": userInfo.email,
-                "otp": userInfo.otp
+                "otp": userInfo.otp,
+                "isBanAllowed": false
             });
 
             console.log(response.data, response.status);

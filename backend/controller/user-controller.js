@@ -99,6 +99,22 @@ export const login = async (request, response) => {
             });
         }
 
+        if (user.isBanned) {
+            console.log(user);
+
+            const currentTime = new Date();
+            let timeDifference = Math.ceil(Math.abs(currentTime - user.banTime) / 36e5);
+
+            if (timeDifference <= 2) {
+                return response.status(403).json({
+                    success: false,
+                    message: "This account is already blocked!"
+                });
+            } else {
+                const unbanned = await service.unbanUser(email);
+            }
+        }
+
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if (!isPasswordCorrect) {
