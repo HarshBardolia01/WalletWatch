@@ -110,6 +110,8 @@ export const login = async (request, response) => {
                     success: false,
                     message: "This account is already blocked!"
                 });
+            } else {
+                const unbanned = await service.unbanUser(email);
             }
         }
 

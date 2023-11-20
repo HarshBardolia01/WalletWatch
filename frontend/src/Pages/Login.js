@@ -60,7 +60,8 @@ const Login = () => {
         try {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
-                "isLogin": true
+                "isLogin": true,
+                "useCase": "login"
             });
 
             console.log(response.data);

@@ -56,7 +56,8 @@ const ForgotPassword = () => {
         try {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
-                "isLogin": true
+                "isLogin": true,
+                "useCase": "resetPassword"
             });
 
             console.log(response.data, response.status);
