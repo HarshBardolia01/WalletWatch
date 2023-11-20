@@ -3,7 +3,7 @@ import React from "react";
 const Header = () => {
     return (
         <div className="header-bar">
-            <h1 style={{ marginLeft: "10px" }}>WalletWatch</h1>
+            <h1 style={{ marginLeft: "58px" }}>WalletWatch</h1>
         </div>
     );
 };

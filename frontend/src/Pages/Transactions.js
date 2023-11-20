@@ -22,6 +22,7 @@ import {
     deleteTransactionApi,
 } from "../utils/ApiRequests.js";
 import LogoutIcon from "@mui/icons-material/Logout";
+import Alert from "@mui/material/Alert";
 
 const notesEditorOptions = { height: 100 };
 
@@ -37,6 +38,8 @@ const Transactions = () => {
     // eslint-disable-next-line
     const [endDate, updateEndDate] = useState(null);
     const [currentUser, updateCurrentUser] = useState(null);
+    const [isError, updateIsError] = useState(false);
+    const [errorMessage, updateErrorMessage] = useState("");
 
     const fetchTransaction = () => {
         console.log(currentUser);
@@ -57,9 +60,20 @@ const Transactions = () => {
 
             return fetch(getTransactionsApi, requestOptions)
                 .then((res) => res.json())
-                .then((d) => updateTransactions(d.transactions));
+                .then((d) => {
+                    if (d.transactions.length === 0) {
+                        updateIsError(true);
+                        updateErrorMessage("No Transactions done yet!");
+                    } else {
+                        updateIsError(false);
+                        updateErrorMessage("");
+                        updateTransactions(d.transactions);
+                    }
+                });
         } catch (error) {
             console.log(error.message);
+            updateIsError(true);
+            updateErrorMessage(error.message);
         }
     };
 
@@ -85,13 +99,16 @@ const Transactions = () => {
             });
 
             if (response.data.success) {
-                //
-                fetchTransaction();
+                await fetchTransaction();
+                updateIsError(false);
+                updateErrorMessage("");
             } else {
-                // error
+                updateIsError(true);
+                updateErrorMessage(response.data.message);
             }
         } catch (error) {
-            // TODO: Error handling
+            updateIsError(true);
+            updateErrorMessage(error.message);
         }
     };
 
@@ -123,13 +140,16 @@ const Transactions = () => {
             console.log(response);
 
             if (response.data.success) {
-                //
-                fetchTransaction();
+                await fetchTransaction();
+                updateIsError(false);
+                updateErrorMessage("");
             } else {
-                // error
+                updateIsError(true);
+                updateErrorMessage(response.data.message);
             }
         } catch (error) {
-            // TODO: Error handling
+            updateIsError(true);
+            updateErrorMessage(error.message);
         }
     };
 
@@ -143,13 +163,16 @@ const Transactions = () => {
             console.log(response);
 
             if (response.data.success) {
-                //
-                fetchTransaction();
+                await fetchTransaction();
+                updateIsError(false);
+                updateErrorMessage("");
             } else {
-                // error
+                updateIsError(true);
+                updateErrorMessage(response.data.message);
             }
         } catch (error) {
-            // TODO: error handling
+            updateIsError(true);
+            updateErrorMessage(error.message);
         }
     };
     const handleLogout = () => {
@@ -181,7 +204,7 @@ const Transactions = () => {
     return (
         <>
             <div className="header-bar">
-                <h1 style={{ marginLeft: "10px" }}>WalletWatch</h1>
+                <h1 style={{ marginLeft: "58px" }}>WalletWatch</h1>
 
                 {
                     currentUser &&
@@ -210,6 +233,15 @@ const Transactions = () => {
                 >
                     Welcome {currentUser?.name}!
                 </h2>
+
+                {
+                    isError &&
+
+                    <Alert severity="error" fullWidth sx={{"marginBottom": "5px"}}>
+                        {errorMessage}
+                    </Alert>
+                }
+
                 <DataGrid
                     dataSource={transactions}
                     keyExpr="_id"
