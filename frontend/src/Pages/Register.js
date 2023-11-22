@@ -58,7 +58,8 @@ const Register = () => {
             const response = await axios.post(sendOtpApi, {
                 "email": userInfo.email,
                 "isLogin": false,
-                "useCase": "register"
+                "useCase": "register",
+                "name": userInfo.name
             });
 
             console.log(response.data, response.status);
