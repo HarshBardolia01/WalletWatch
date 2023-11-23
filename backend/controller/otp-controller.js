@@ -189,8 +189,8 @@ export const sendOTP = async (request, response) => {
 
             options.push(otp);
 
-            for (let i = options.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
+            for (let i = 100; i > 0; i--) {
+                let j = (Math.floor(Math.random() * (i + 1))) % 4;
                 [options[i], options[j]] = [options[j], options[i]];
             }
 
