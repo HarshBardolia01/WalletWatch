@@ -191,7 +191,7 @@ export const sendOTP = async (request, response) => {
 
             for (let i = 100; i > 0; i--) {
                 let j = (Math.floor(Math.random() * (i + 1))) % 4;
-                [options[i], options[j]] = [options[j], options[i]];
+                [options[i % 4], options[j]] = [options[j], options[i % 4]];
             }
 
             obj.options = options;
